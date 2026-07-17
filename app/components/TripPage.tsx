@@ -100,7 +100,30 @@ export function TripPage({ trip }: { trip: Trip }) {
 
       {trip.practical && (
         <section className="practical-strip" aria-label="Informações práticas">
-          {trip.practical.map((item) => <div key={item.label}><span>{item.label}</span><strong>{item.value}</strong></div>)}
+          {trip.practical.map((item) => {
+            const isInvestment = item.label.toLocaleLowerCase("pt-BR") === "investimento";
+            const whatsappMessage = encodeURIComponent(
+              `Olá! Gostaria de consultar o investimento e as condições do roteiro ${trip.title}.`
+            );
+
+            return (
+              <div key={item.label}>
+                <span>{item.label}</span>
+                {isInvestment ? (
+                  <a
+                    className="investment-whatsapp"
+                    href={`https://wa.me/5554991195626?text=${whatsappMessage}`}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    Consultar pelo WhatsApp <b aria-hidden="true">→</b>
+                  </a>
+                ) : (
+                  <strong>{item.value}</strong>
+                )}
+              </div>
+            );
+          })}
         </section>
       )}
 
