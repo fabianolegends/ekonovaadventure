@@ -1,10 +1,17 @@
+import type { Metadata } from "next";
 import { Arrow } from "../components/Icons";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { TripCard } from "../components/TripCard";
 import { trips } from "../data/trips";
 
-export const metadata = { title: "Expedições de cicloturismo | Ekonova Adventure" };
+export const metadata: Metadata = {
+  title: "Expedições de cicloturismo",
+  description: "Rotas de cicloturismo com autonavegação, briefing, bagagem, monitoramento e rede de apoio para pedalar com liberdade e segurança.",
+  alternates: { canonical: "/bike" },
+  openGraph: { url: "/bike", images: ["/images/card-cicloturismo.jpg"] },
+  twitter: { images: ["/images/card-cicloturismo.jpg"] },
+};
 
 export default function BikePage() {
   const bike = trips.filter((trip) => trip.kind === "bike");
