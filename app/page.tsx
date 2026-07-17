@@ -62,7 +62,7 @@ export default function Home() {
 
       <section className="method-section" id="metodo">
         <div className="method-visual">
-          <img src="/images/jeito-ekonova-vulcao-estrelas.jpeg" alt="Vulcão sob um céu estrelado em uma experiência Ekonova" />
+          <img src="/images/jeito-ekonova-vulcao-estrelas-v2.webp" alt="Vulcão sob um céu estrelado em uma experiência Ekonova" />
           <RouteLine />
         </div>
         <div className="method-copy">
