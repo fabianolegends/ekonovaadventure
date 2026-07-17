@@ -1,10 +1,17 @@
+import type { Metadata } from "next";
 import { Arrow } from "../components/Icons";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { TripCard } from "../components/TripCard";
 import { trips } from "../data/trips";
 
-export const metadata = { title: "Hiking 50+ · Caminhadas | Ekonova Adventure" };
+export const metadata: Metadata = {
+  title: "Hiking 50+ · Caminhadas",
+  description: "Caminhadas de um dia e experiências de hiking em pequenos grupos, com preparação, clareza e suporte especializado para o público 50+.",
+  alternates: { canonical: "/hiking" },
+  openGraph: { url: "/hiking", images: ["/images/clientes-trilha.jpeg"] },
+  twitter: { images: ["/images/clientes-trilha.jpeg"] },
+};
 
 export default function HikingPage() {
   const hiking = trips.filter((trip) => trip.kind === "trekking");
