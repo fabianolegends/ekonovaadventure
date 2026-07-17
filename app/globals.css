@@ -665,7 +665,7 @@ h1, h2 { font-weight: 750; letter-spacing: -.045em; }
 
 .inner-hero { border-bottom: 5px solid var(--brand); }
 .inner-hero::before { background: linear-gradient(90deg, rgba(2,47,41,.94), rgba(2,47,41,.16)); }
-.inner-hero-trekking { background-image: url('/images/hero-hiking-montanha.png'); background-position: center 52%; }
+.inner-hero-trekking { background-image: url('/images/hero-hiking-montanha-v2.webp'); background-position: center 52%; }
 .inner-hero-bike { background-image: url('/images/rota-serra-mar.webp'); background-position: center 58%; }
 .inner-hero .eyebrow { color: var(--brand-bright); }
 .about-hero { background: var(--sky); border-bottom: 5px solid var(--brand); }
