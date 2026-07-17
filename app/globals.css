@@ -839,3 +839,36 @@ h1, h2 { font-weight: 750; letter-spacing: -.045em; }
   .moving-hiker { left: 24%; }
   .moving-cyclist { left: 65%; }
 }
+
+
+/* Social contacts in the main navigation */
+.site-header > .header-socials {
+  padding-left: 20px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  border-left: 1px solid rgba(255,255,255,.34);
+}
+.header-socials .social-link {
+  flex: 0 0 34px;
+}
+.mobile-menu .mobile-socials {
+  width: 100%;
+  padding-left: 0;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  align-items: center;
+  border-left: 0;
+}
+
+@media (max-width: 1120px) {
+  .site-header > .header-socials { display: none; }
+  .mobile-menu .mobile-socials {
+    padding-top: 15px;
+    border-top: 1px solid rgba(255,255,255,.2);
+  }
+}
