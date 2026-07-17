@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { trips } from "./data/trips";
 
-const baseUrl = "https://ekonovaadv.com.br";
+const baseUrl = "https://www.ekonovaadv.com.br";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticPages: MetadataRoute.Sitemap = [
