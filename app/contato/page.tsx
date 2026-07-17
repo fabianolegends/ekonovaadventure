@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import { Arrow } from "../components/Icons";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 
-export const metadata = { title: "Contato | Ekonova Adventure" };
+export const metadata: Metadata = {
+  title: "Contato",
+  description: "Converse com a Ekonova pelo WhatsApp e encontre a experiência de hiking ou cicloturismo adequada ao seu ritmo.",
+  alternates: { canonical: "/contato" },
+  openGraph: { url: "/contato", images: ["/images/clientes-trilha.jpeg"] },
+};
 
 export default function ContactPage() {
   return <main><SiteHeader />
