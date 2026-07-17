@@ -46,6 +46,11 @@ img { display: block; max-width: 100%; }
   font-size: 13px;
   font-weight: 650;
 }
+.header-socials { display: flex; align-items: center; gap: 9px; flex: 0 0 auto; }
+.social-link { width: 34px; height: 34px; display: grid; place-items: center; color: rgba(255,255,255,.86); border: 1px solid transparent; border-radius: 50%; transition: color .2s ease, border-color .2s ease, background .2s ease, transform .2s ease; }
+.social-link:hover { color: white; border-color: rgba(255,255,255,.3); background: rgba(255,255,255,.08); transform: translateY(-1px); }
+.social-link svg { width: 20px; height: 20px; }
+.mobile-socials { display: none; }
 .mobile-menu { display: none; margin-left: auto; }
 .mobile-menu summary { cursor: pointer; list-style: none; padding: 10px 14px; border: 1px solid rgba(255,255,255,.3); border-radius: 999px; }
 .mobile-menu nav { position: absolute; top: 76px; left: 16px; right: 16px; display: grid; padding: 18px; gap: 15px; background: var(--forest); border-radius: 14px; box-shadow: 0 20px 50px rgba(0,0,0,.2); }
@@ -92,8 +97,10 @@ h1 { margin: 0; max-width: 660px; font-size: clamp(58px, 6vw, 98px); line-height
 .bike-card { background: var(--cream); border-color: rgba(198,161,91,.45); }
 
 @media (max-width: 1120px) {
-  .desktop-nav, .header-cta { display: none; }
+  .desktop-nav, .header-cta, .site-header > .header-socials { display: none; }
   .mobile-menu { display: block; }
+  .mobile-socials { margin-top: 5px; padding-top: 15px; display: flex; gap: 12px; border-top: 1px solid rgba(255,255,255,.16); }
+  .mobile-socials .social-link { width: 40px; height: 40px; border-color: rgba(255,255,255,.2); }
   .hero { grid-template-columns: 1fr 1fr; gap: 30px; }
   .hero-media { min-height: 580px; }
 }
