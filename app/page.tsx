@@ -1,14 +1,25 @@
+import type { Metadata } from "next";
 import { Arrow, RouteLine } from "./components/Icons";
 import { SiteFooter } from "./components/SiteFooter";
 import { SiteHeader } from "./components/SiteHeader";
 import { TripCard } from "./components/TripCard";
 import { ProfileBars } from "./components/ProfileBars";
 import { TestimonialsCarousel } from "./components/TestimonialsCarousel";
+import { OrganizationSchema } from "./components/OrganizationSchema";
 import { featuredTrips } from "./data/trips";
+
+export const metadata: Metadata = {
+  title: "Turismo ativo 50+ em pequenos grupos",
+  description: "Experiências de hiking e cicloturismo para quem busca natureza, autonomia, pequenos grupos e suporte especializado no Brasil e na América do Sul.",
+  alternates: { canonical: "/" },
+  openGraph: { url: "/", images: ["/images/clientes-trilha.jpeg"] },
+  twitter: { images: ["/images/clientes-trilha.jpeg"] },
+};
 
 export default function Home() {
   return (
     <main>
+      <OrganizationSchema />
       <SiteHeader overlay />
 
       <section className="hero" id="top">
