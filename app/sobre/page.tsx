@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { Arrow } from "../components/Icons";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 
-export const metadata = { title: "Sobre a Ekonova Adventure" };
+export const metadata: Metadata = {
+  title: "Sobre a Ekonova",
+  description: "Conheça a história de Fabiano e Cristiane Pellenz e os 14 anos da Ekonova criando experiências de turismo ativo com cuidado e segurança.",
+  alternates: { canonical: "/sobre" },
+  openGraph: { url: "/sobre", images: ["/images/fabiano-cristiane-ekonova.jpg"] },
+  twitter: { images: ["/images/fabiano-cristiane-ekonova.jpg"] },
+};
 
 export default function AboutPage() {
   return <main><SiteHeader />
