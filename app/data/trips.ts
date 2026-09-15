@@ -1,5 +1,15 @@
 export type TripKind = "trekking" | "bike";
 
+export type TripGalleryImage = {
+  src: string;
+  alt: string;
+  caption: string;
+  credit: string;
+  source: string;
+  license: string;
+  licenseUrl?: string;
+};
+
 export type Trip = {
   slug: string;
   title: string;
@@ -33,7 +43,7 @@ export type Trip = {
     meta?: string;
     description: string;
   }>;
-  gallery?: string[];
+  gallery?: Array<string | TripGalleryImage>;
 };
 
 export const trips: Trip[] = [
@@ -187,7 +197,107 @@ export const trips: Trip[] = [
       { title: "Cajón de Arenales e despedida", meta: "7º dia · 8,5 km · 436 m+ · até 3.149 m", description: "Caminhada moderada por terreno de pedras soltas até a Laguna Arenales. No retorno a Mendoza, jantar harmonizado na Bodega Lagarde ou similar." },
       { title: "Encerramento em Mendoza", meta: "8º dia · café da manhã e check-out", description: "Fim da programação e deslocamento individual ao aeroporto, conforme o horário de cada participante." },
     ],
-    gallery: ["/images/gallery/andes-essencial/1.jpg", "/images/gallery/andes-essencial/2.jpg", "/images/gallery/andes-essencial/3.jpg", "/images/gallery/andes-essencial/4.jpg", "/images/gallery/andes-essencial/5.jpg", "/images/gallery/andes-essencial/6.jpg"],
+    gallery: [
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cerro_Arco_visto_desde_la_Reserva_natural_Divisadero_Largo..jpg",
+        alt: "Cerro Arco visto a partir da Reserva Natural Divisadero Largo, em Mendoza",
+        caption: "Reserva Natural Divisadero Largo",
+        credit: "Itsmemarttin",
+        source: "https://commons.wikimedia.org/wiki/File:Cerro_Arco_visto_desde_la_Reserva_natural_Divisadero_Largo..jpg",
+        license: "CC BY-SA 3.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Quebrada_del_Estudiante_-_Vallecitos,_Cord%C3%B3n_del_Plata,_Andes.jpg",
+        alt: "Trilha da Quebrada del Estudiante entre montanhas no setor de Vallecitos",
+        caption: "Quebrada del Estudiante · Vallecitos",
+        credit: "Lu Brito",
+        source: "https://commons.wikimedia.org/wiki/File:Quebrada_del_Estudiante_-_Vallecitos,_Cord%C3%B3n_del_Plata,_Andes.jpg",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/R%C3%ADo_Vallecitos.JPG",
+        alt: "Rio Vallecitos descendo entre as montanhas da pré-cordilheira de Mendoza",
+        caption: "Rio Vallecitos",
+        credit: "Dario Alpern",
+        source: "https://commons.wikimedia.org/wiki/File:R%C3%ADo_Vallecitos.JPG",
+        license: "CC BY-SA 3.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/3.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Climbers_at_the_summit_of_Arenales,_Vallecitos,_Cord%C3%B3n_del_Plata,_Andes.jpg",
+        alt: "Caminhantes no cume do Arenales com as montanhas nevadas ao fundo",
+        caption: "Cume do Arenales · Vallecitos",
+        credit: "Lu Brito",
+        source: "https://commons.wikimedia.org/wiki/File:Climbers_at_the_summit_of_Arenales,_Vallecitos,_Cord%C3%B3n_del_Plata,_Andes.jpg",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mendoza_-_Cord%C3%B3n_del_Plata.JPG",
+        alt: "Panorama nevado do Cordón del Plata sob o céu azul",
+        caption: "Cordón del Plata",
+        credit: "Leandro Kibisz",
+        source: "https://commons.wikimedia.org/wiki/File:Mendoza_-_Cord%C3%B3n_del_Plata.JPG",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mendoza_-_Monta%C3%B1as_en_Uspallata.JPG",
+        alt: "Cordilheira nevada vista dos arredores de Uspallata, em Mendoza",
+        caption: "Montanhas de Uspallata",
+        credit: "Leandro Kibisz",
+        source: "https://commons.wikimedia.org/wiki/File:Mendoza_-_Monta%C3%B1as_en_Uspallata.JPG",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Aconcagua_Provincial_Park_08.jpg",
+        alt: "Vista do Aconcágua no Parque Provincial Aconcágua, em Mendoza",
+        caption: "Parque Provincial Aconcágua",
+        credit: "Bernard Gagnon",
+        source: "https://commons.wikimedia.org/wiki/File:Aconcagua_Provincial_Park_08.jpg",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Puente_del_Inca_near_Mendoza.jpg",
+        alt: "Formação natural de Puente del Inca cercada pelas montanhas de Mendoza",
+        caption: "Puente del Inca",
+        credit: "Havardtl",
+        source: "https://commons.wikimedia.org/wiki/File:Puente_del_Inca_near_Mendoza.jpg",
+        license: "CC BY 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Embalse_Potrerillos,_sobre_el_r%C3%ADo_Mendoza_02.jpg",
+        alt: "Águas azuis do reservatório de Potrerillos entre montanhas",
+        caption: "Reservatório de Potrerillos",
+        credit: "BiblioJu",
+        source: "https://commons.wikimedia.org/wiki/File:Embalse_Potrerillos,_sobre_el_r%C3%ADo_Mendoza_02.jpg",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vineyard_in_Mendoza,_Argentina.jpg",
+        alt: "Fileiras de vinhedos de Mendoza diante da Cordilheira dos Andes",
+        caption: "Vinhedos de Mendoza",
+        credit: "David",
+        source: "https://commons.wikimedia.org/wiki/File:Vineyard_in_Mendoza,_Argentina.jpg",
+        license: "CC BY 2.0",
+        licenseUrl: "https://creativecommons.org/licenses/by/2.0/",
+      },
+      {
+        src: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Summit_of_Arenales,_Vallecitos,_Cord%C3%B3n_del_Plata,_Andes.jpg",
+        alt: "Marco do cume do Arenales com o reservatório de Potrerillos ao fundo",
+        caption: "Cume do Arenales",
+        credit: "Lu Brito",
+        source: "https://commons.wikimedia.org/wiki/File:Summit_of_Arenales,_Vallecitos,_Cord%C3%B3n_del_Plata,_Andes.jpg",
+        license: "CC BY-SA 4.0",
+        licenseUrl: "https://creativecommons.org/licenses/by-sa/4.0/",
+      },
+    ],
   },
   {
     slug: "serra-do-cipo",

@@ -339,9 +339,13 @@ h1 { margin: 0; max-width: 660px; font-size: clamp(58px, 6vw, 98px); line-height
 .gallery-controls button:hover { background: var(--brand); color: #043b34; }
 .gallery-track { padding: 0 clamp(24px, 6vw, 100px); display: flex; gap: 18px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; outline: none; }
 .gallery-track::-webkit-scrollbar { display: none; }
-.gallery-track figure { flex: 0 0 min(68vw, 760px); height: 470px; margin: 0; overflow: hidden; border-radius: 16px; scroll-snap-align: start; background: #062f2a; }
+.gallery-track figure { position: relative; flex: 0 0 min(68vw, 760px); height: 470px; margin: 0; overflow: hidden; border-radius: 16px; scroll-snap-align: start; background: #062f2a; }
 .gallery-track img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s ease; }
 .gallery-track figure:hover img { transform: scale(1.025); }
+.gallery-track figcaption { position: absolute; inset: auto 0 0; z-index: 1; padding: 58px 22px 18px; display: flex; flex-direction: column; gap: 5px; color: white; background: linear-gradient(transparent, rgba(0, 24, 21, .82)); pointer-events: none; }
+.gallery-track figcaption strong { font-size: 14px; letter-spacing: .01em; }
+.gallery-track figcaption span { font-size: 10px; color: rgba(255,255,255,.8); }
+.gallery-track figcaption a { color: inherit; text-decoration: underline; text-underline-offset: 2px; pointer-events: auto; }
 .practical-strip { padding: 34px clamp(24px, 6vw, 100px); display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: #d8e8e1; }
 .practical-strip div { min-height: 120px; padding: 25px 30px; display: flex; flex-direction: column; gap: 10px; background: white; }
 .practical-strip span { color: #078a6d; font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }

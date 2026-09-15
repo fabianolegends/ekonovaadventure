@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "commons.wikimedia.org",
+        pathname: "/wiki/Special:Redirect/file/**",
+      },
+    ],
+  },
   async redirects() {
     return [
       { source: "/destinos/trekking", destination: "/hiking", permanent: true },
