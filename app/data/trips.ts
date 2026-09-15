@@ -150,6 +150,46 @@ export const trips: Trip[] = [
     ],
   },
   {
+    slug: "andes-essencial",
+    title: "Andes Essencial",
+    place: "Mendoza e Uspallata, Argentina",
+    kind: "trekking",
+    status: "Saída programada",
+    date: "10 a 17 de março de 2027",
+    duration: "8 dias",
+    distance: "aprox. 64 km de caminhada",
+    image: "/images/rota-andes-essencial.jpg",
+    summary: "Trekkings progressivos, alta montanha e experiências harmonizadas entre Mendoza, Uspallata e o Aconcágua.",
+    href: "/roteiros/andes-essencial",
+    highlights: ["Reserva Natural Divisadero Largo", "Vallecitos e Cordón del Plata", "Aconcágua: Horcones e Confluencia", "Bodegas Los Toneles e Lagarde"],
+    included: ["7 diárias em pousadas ou hotéis com café da manhã", "Almoço harmonizado de quatro tempos na Bodega Los Toneles ou similar", "Jantar harmonizado de quatro tempos na Bodega Lagarde ou similar", "Ingressos e permissões das atividades mencionadas", "Transfers terrestres previstos no cronograma", "Camiseta Ekonova Adventure", "Guia Cadastur com formação em medicina de áreas remotas"],
+    notIncluded: ["Passagens e transfers de chegada e saída", "Refeições, lanches e bebidas não especificados", "Hospedagens e deslocamentos fora do cronograma", "Despesas pessoais e serviços extras", "Suplemento de US$ 300 para hospedagem individual", "Qualquer item não descrito como incluído"],
+    practical: [
+      { label: "Formato", value: "Grupo pequeno · até 12 participantes" },
+      { label: "Hospedagem", value: "7 diárias · padrão turístico ou superior" },
+      { label: "Altitude", value: "Atividades entre 1.200 e 3.527 m" },
+      { label: "Investimento", value: "US$ 1.399 por pessoa em quarto duplo" },
+    ],
+    profile: { effort: 4, technique: 2, exposure: 4, comfort: 4 },
+    note: "Altitude, vento e terreno solto pedem preparo compatível. A caminhada do sétimo dia poderá mudar conforme as condições de acesso e clima.",
+    editorial: {
+      kicker: "Trekking, altitude e vinhos em Mendoza",
+      title: "Uma progressão cuidadosa entre a pré-cordilheira e o Aconcágua.",
+      paragraphs: ["Mendoza abre a viagem com parques, vinhedos e uma primeira caminhada de ambientação. Nos dias seguintes, o percurso ganha altitude de forma gradual: Divisadero Largo, Vallecitos, as montanhas coloridas de Uspallata e o caminho de Horcones a Confluencia.", "Entre uma etapa e outra, a experiência desacelera em bodegas e paisagens da cordilheira. Um almoço harmonizado, um jantar de despedida e um dia de recuperação criam espaço para saborear o território, além de atravessá-lo."],
+    },
+    stages: [
+      { title: "Chegada a Mendoza", meta: "1º dia · aprox. 8 km · 2 a 2h30", description: "Recepção do grupo e caminhada leve pelo Parque General San Martín e Cerro de la Gloria. O transfer desde o aeroporto é individual e não está incluído." },
+      { title: "Divisadero Largo e Bodega Los Toneles", meta: "2º dia · 8 a 9 km · 300 m+ · 3 a 4 horas", description: "Trilha moderada pela pré-cordilheira, chegando a cerca de 1.200 metros, seguida de almoço harmonizado de quatro tempos na Bodega Los Toneles ou similar." },
+      { title: "Vallecitos e Cordón del Plata", meta: "3º dia · 8,6 km · 586 m+ · até 3.527 m", description: "Caminhada de altitude até Las Veguitas, com possibilidade de avançar à Vega Superior conforme as condições, antes do deslocamento para Uspallata." },
+      { title: "Cerro Siete Colores", meta: "4º dia · aprox. 15 km · 496 m+ · 5 horas", description: "Circuito pela Quebrada Santa Elena e pelo conjunto de montanhas coloridas, em terreno exposto, sem sombra e sem pontos de água." },
+      { title: "Aconcágua: Horcones a Confluencia", meta: "5º dia · 15,5 km · 599 m+ · 6 a 7 horas", description: "A etapa mais exigente segue pelo Parque Provincial Aconcágua até Confluencia, a 3.428 metros, e termina com parada em Puente del Inca." },
+      { title: "Uspallata, Potrerillos e recuperação", meta: "6º dia · sem trekking", description: "Dia de descanso ativo com visita a Las Bóvedas, paisagens do reservatório de Potrerillos, almoço e paradas opcionais em Cacheuta ou mirantes da região." },
+      { title: "Cajón de Arenales e despedida", meta: "7º dia · 8,5 km · 436 m+ · até 3.149 m", description: "Caminhada moderada por terreno de pedras soltas até a Laguna Arenales. No retorno a Mendoza, jantar harmonizado na Bodega Lagarde ou similar." },
+      { title: "Encerramento em Mendoza", meta: "8º dia · café da manhã e check-out", description: "Fim da programação e deslocamento individual ao aeroporto, conforme o horário de cada participante." },
+    ],
+    gallery: ["/images/gallery/andes-essencial/1.jpg", "/images/gallery/andes-essencial/2.jpg", "/images/gallery/andes-essencial/3.jpg", "/images/gallery/andes-essencial/4.jpg", "/images/gallery/andes-essencial/5.jpg", "/images/gallery/andes-essencial/6.jpg"],
+  },
+  {
     slug: "serra-do-cipo",
     title: "Serra do Cipó",
     place: "Minas Gerais",
@@ -500,4 +540,6 @@ export const trips: Trip[] = [
   },
 ];
 
-export const featuredTrips = trips.slice(0, 3);
+const featuredTripSlugs = new Set(["salta", "equador", "andes-essencial"]);
+
+export const featuredTrips = trips.filter((trip) => featuredTripSlugs.has(trip.slug));
