@@ -89,7 +89,7 @@ export const trips: Trip[] = [
     place: "Quito e Andes Equatorianos",
     kind: "trekking",
     status: "Saída programada",
-    date: "06 a 14 de novembro de 2026",
+    date: "03 a 11 de setembro de 2027",
     duration: "9 dias",
     distance: "aprox. 50 km de caminhada",
     image: "/images/rota-equador.jpg",
