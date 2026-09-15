@@ -102,7 +102,7 @@ export const trips: Trip[] = [
       { label: "Formato", value: "Grupo pequeno · até 12 participantes" },
       { label: "Hospedagem", value: "7 diárias · padrão turístico ou superior" },
       { label: "Altitude", value: "Atividades entre 2.850 e 3.900 m" },
-      { label: "Investimento", value: "Consulte condições da saída de 2026" },
+      { label: "Investimento", value: "Consulte condições da saída de 2027" },
     ],
     profile: { effort: 3, technique: 2, exposure: 5, comfort: 3 },
     note: "A altitude é o fator central deste roteiro. A participação depende de conversa prévia e preparo compatível.",
