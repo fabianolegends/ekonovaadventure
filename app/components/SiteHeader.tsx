@@ -53,6 +53,7 @@ export function SiteHeader({ overlay = true }: { overlay?: boolean }) {
         <img src="/ekonova-logo.png" alt="Ekonova Adventure" />
       </Link>
       <nav className="desktop-nav" aria-label="Navegação principal">
+        <Link href="/">Home</Link>
         <Link href="/hiking">Hiking 50+</Link>
         <Link href="/bike">Expedições de cicloturismo</Link>
         <Link href="/#saidas">Próximas saídas</Link>
@@ -63,6 +64,7 @@ export function SiteHeader({ overlay = true }: { overlay?: boolean }) {
       <details className="mobile-menu">
         <summary aria-label="Abrir menu">Menu</summary>
         <nav aria-label="Navegação móvel">
+          <Link href="/">Home</Link>
           <Link href="/hiking">Hiking 50+</Link>
           <Link href="/bike">Expedições de cicloturismo</Link>
           <Link href="/#saidas">Próximas saídas</Link>
