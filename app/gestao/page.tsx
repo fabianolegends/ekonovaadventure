@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import {
   Bell,
   CalendarDays,
@@ -20,30 +19,8 @@ import {
   WalletCards,
   X,
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { createClient, getSession, listClients, signOut, supabaseConfigured, type ClientRecord } from "../../lib/supabase-browser";
-
-type Participant = {
-  name: string;
-  city: string;
-  image: string;
-  documents: "OK" | "Pendente";
-  documentNote: string;
-  payment: "Pago" | "Parcial" | "Pendente";
-  paymentNote: string;
-  preparation: "Concluída" | "Em andamento";
-  preparationNote: string;
-  phone: string;
-};
-
-const participants: Participant[] = [
-  { name: "Ana Beatriz Souza", city: "São Paulo – SP", image: "/images/depoimento-helena.jpg", documents: "OK", documentNote: "Passaporte válido", payment: "Pago", paymentNote: "R$ 7.900", preparation: "Concluída", preparationNote: "Todos os itens", phone: "5554991195626" },
-  { name: "Bruno Almeida", city: "Belo Horizonte – MG", image: "/images/depoimento-felipe.jpg", documents: "OK", documentNote: "Passaporte válido", payment: "Pago", paymentNote: "R$ 7.900", preparation: "Em andamento", preparationNote: "2 itens pendentes", phone: "5554991195626" },
-  { name: "Carla Mendes", city: "Rio de Janeiro – RJ", image: "/images/depoimento-leila.jpg", documents: "OK", documentNote: "Passaporte válido", payment: "Pago", paymentNote: "R$ 7.900", preparation: "Concluída", preparationNote: "Todos os itens", phone: "5554991195626" },
-  { name: "Diego Ramos", city: "Curitiba – PR", image: "/images/depoimento-claudio.jpg", documents: "OK", documentNote: "Passaporte válido", payment: "Parcial", paymentNote: "R$ 4.000 de R$ 7.900", preparation: "Em andamento", preparationNote: "3 itens pendentes", phone: "5554991195626" },
-  { name: "Fernanda Costa", city: "Porto Alegre – RS", image: "/images/depoimento-zica.png", documents: "Pendente", documentNote: "Enviar passaporte", payment: "Pago", paymentNote: "R$ 7.900", preparation: "Em andamento", preparationNote: "1 item pendente", phone: "5554991195626" },
-  { name: "Gustavo Lima", city: "Salvador – BA", image: "/images/depoimento-thiago.webp", documents: "OK", documentNote: "Passaporte válido", payment: "Pago", paymentNote: "R$ 7.900", preparation: "Concluída", preparationNote: "Todos os itens", phone: "5554991195626" },
-];
+import { useEffect, useState } from "react";
+import { createClient, getSession, listClients, listPayments, signOut, supabaseConfigured, type ClientRecord, type PaymentRecord } from "../../lib/supabase-browser";
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
@@ -51,15 +28,15 @@ const navItems = [
 ] as const;
 
 const modules = {
-  "Início": { eyebrow: "Visão do dia", title: "A jornada da equipe", summary: "3 pendências, 2 pagamentos e 1 saída com briefing esta semana.", cards: [["Saídas próximas", "Andes Essencial · 02 out", "Ver agenda"], ["Clientes ativos", "26 viajantes em preparação", "Ver clientes"], ["Atenção hoje", "3 documentos aguardando", "Organizar"]] },
-  "Saídas": { eyebrow: "Saídas", title: "Andes Essencial", summary: "Acompanhamento completo da saída: participantes, preparação e ritmo financeiro.", cards: [["Participantes", "9 de 10 vagas ocupadas", "Abrir saída"], ["Pendências", "3 itens em andamento", "Ver checklist"], ["Financeiro", "R$ 71.200 recebidos", "Acompanhar"]] },
-  "Clientes": { eyebrow: "Relacionamento", title: "Clientes e viajantes", summary: "Cadastros, histórico de contatos, preferências e documentos em um só lugar.", cards: [["Novos contatos", "8 interessados nas últimas 2 semanas", "Ver funil"], ["Perfis completos", "21 de 26 com cadastro atualizado", "Revisar"], ["Próximo acompanhamento", "Diego Ramos · hoje, 16h", "Abrir conversa"]] },
-  "Financeiro": { eyebrow: "Fluxo financeiro", title: "Pagamentos com clareza", summary: "Acompanhe entradas, parcelas e cobranças sem perder o contexto de cada viagem.", cards: [["A receber", "R$ 11.800 até 30 set", "Ver parcelas"], ["Recebido no mês", "R$ 71.200", "Abrir visão"], ["Cobranças prontas", "2 mensagens de WhatsApp", "Enviar roteiros"]] },
-  "Operações": { eyebrow: "Bastidores da viagem", title: "Operação sem improvisos", summary: "Briefings, transfers, seguros e fornecedores organizados por saída.", cards: [["Checklist Andes", "12 de 16 itens concluídos", "Continuar"], ["Próxima decisão", "Confirmar transfer de chegada", "Resolver"], ["Fornecedores", "7 confirmações registradas", "Consultar"]] },
-  "Equipamentos": { eyebrow: "Preparação", title: "Equipamentos e segurança", summary: "Controle a preparação dos viajantes e antecipe itens críticos.", cards: [["Lista final", "4 viajantes ainda pendentes", "Acompanhar"], ["Itens alugados", "6 itens reservados", "Ver reservas"], ["Segurança", "6 seguros validados", "Conferir"]] },
-  "Documentos": { eyebrow: "Conferência", title: "Documentos em dia", summary: "Passaportes, seguros e termos reunidos na ficha de cada participante.", cards: [["Pendentes", "3 documentos exigem atenção", "Ver pendências"], ["Validados", "23 documentos conferidos", "Consultar"], ["Vencimentos", "1 passaporte precisa revisão", "Revisar"]] },
-  "Comunicação": { eyebrow: "WhatsApp e relacionamento", title: "Conversas que aproximam", summary: "Use roteiros consistentes para briefing, cobranças, documentos e pré-viagem.", cards: [["Roteiro pronto", "Cobrança de parcela · Diego Ramos", "Abrir WhatsApp"], ["Mensagem programada", "Lista de equipamentos · 30 set", "Editar"], ["Histórico", "18 contatos registrados este mês", "Ver conversas"]] },
-  "Relatórios": { eyebrow: "Leitura do negócio", title: "Relatórios de jornadas", summary: "Resultados de ocupação, receita e relacionamento para decisões mais seguras.", cards: [["Ocupação", "90% na saída Andes Essencial", "Abrir relatório"], ["Receita", "R$ 71.200 confirmados", "Ver detalhes"], ["Relacionamento", "92% de respostas em até 24h", "Analisar"]] },
+  "Início": { eyebrow: "Visão do dia", title: "A jornada da equipe", summary: "Acompanhe a operação a partir das inscrições reais recebidas.", cards: [] },
+  "Saídas": { eyebrow: "Saídas", title: "Andes Essencial", summary: "Acompanhamento das inscrições, preparação e financeiro reais.", cards: [] },
+  "Clientes": { eyebrow: "Relacionamento", title: "Clientes e viajantes", summary: "Cadastros, contatos e documentos em uma única ficha.", cards: [] },
+  "Financeiro": { eyebrow: "Fluxo financeiro", title: "Pagamentos com clareza", summary: "Entradas e parcelas registradas nas inscrições reais.", cards: [] },
+  "Operações": { eyebrow: "Bastidores da viagem", title: "Operação", summary: "Organize os detalhes à medida que o grupo for formado.", cards: [] },
+  "Equipamentos": { eyebrow: "Preparação", title: "Equipamentos e segurança", summary: "Acompanhe a preparação conforme os viajantes se cadastrarem.", cards: [] },
+  "Documentos": { eyebrow: "Conferência", title: "Documentos", summary: "Passaportes e informações de saúde serão organizados por inscrição.", cards: [] },
+  "Comunicação": { eyebrow: "WhatsApp e relacionamento", title: "Comunicação", summary: "Use roteiros de mensagem vinculados a dados reais.", cards: [] },
+  "Relatórios": { eyebrow: "Leitura do negócio", title: "Relatórios", summary: "Acompanhe ocupação e receita quando as inscrições começarem.", cards: [] },
 } as const;
 
 function Status({ children, tone = "ok" }: { children: React.ReactNode; tone?: "ok" | "warn" | "neutral" }) {
@@ -69,13 +46,12 @@ function Status({ children, tone = "ok" }: { children: React.ReactNode; tone?: "
 export default function ManagementPage() {
   const [activeTab, setActiveTab] = useState("Participantes");
   const [activeModule, setActiveModule] = useState<keyof typeof modules>("Saídas");
-  const [checklist, setChecklist] = useState([true, true, false, false]);
   const [notice, setNotice] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [clientsLoading, setClientsLoading] = useState(false);
-  const paidCount = useMemo(() => participants.filter((person) => person.payment === "Pago").length, []);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
 
   useEffect(() => {
     if (!supabaseConfigured) { setCheckingAccess(false); return; }
@@ -86,14 +62,15 @@ export default function ManagementPage() {
   }, []);
 
   useEffect(() => {
-    if (activeModule !== "Clientes" || !supabaseConfigured) return;
+    if (!(["Saídas", "Clientes", "Relatórios"].includes(activeModule)) || !supabaseConfigured) return;
     setClientsLoading(true);
     listClients().then(setClients).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os clientes.")).finally(() => setClientsLoading(false));
   }, [activeModule]);
+  useEffect(() => { if (["Saídas", "Financeiro", "Relatórios"].includes(activeModule) && supabaseConfigured) listPayments().then(setPayments).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar pagamentos.")); }, [activeModule]);
 
-  function toggleTask(index: number) {
-    setChecklist((current) => current.map((done, itemIndex) => itemIndex === index ? !done : done));
-  }
+  const totalPlanned = payments.reduce((sum, item) => sum + item.amount_cents, 0);
+  const totalReceived = payments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
+  const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value / 100);
 
   function showNotice(message: string) {
     setNotice(message);
@@ -126,15 +103,15 @@ export default function ManagementPage() {
         </header>
 
         <div className="management-page">
-          {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} /> : activeModule === "Comunicação" ? <CommunicationModule onAction={showNotice} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
+          {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} /> : activeModule === "Financeiro" ? <FinanceModule payments={payments} onAction={showNotice} /> : activeModule === "Relatórios" ? <ReportsModule clients={clients} payments={payments} /> : activeModule === "Comunicação" ? <CommunicationModule onAction={showNotice} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
           <button className="back-link" onClick={() => window.history.back()}>← Voltar para saídas</button>
           <section className="management-title-row">
             <div>
-              <div className="title-line"><h1>Andes Essencial</h1><Status>● Confirmada</Status></div>
-              <p className="trip-subtitle">Trekking e cicloturismo <b /> Chile e Argentina</p>
-              <div className="trip-meta"><span><CalendarDays aria-hidden="true" />02 – 11 out 2026</span><span><MapPinned aria-hidden="true" />Cordilheira dos Andes</span><span><Users aria-hidden="true" />9/10 participantes</span></div>
+              <div className="title-line"><h1>Andes Essencial</h1><Status tone="neutral">● Inscrições abertas</Status></div>
+              <p className="trip-subtitle">Trekking e gastronomia <b /> Mendoza, Argentina</p>
+              <div className="trip-meta"><span><CalendarDays aria-hidden="true" />10 – 17 mar 2027</span><span><MapPinned aria-hidden="true" />Cordilheira dos Andes</span><span><Users aria-hidden="true" />{clients.length}/12 inscrições</span></div>
             </div>
-            <div className="title-actions"><button onClick={() => showNotice("Edição de saída aberta.")}>Editar saída</button><button aria-label="Mais ações" onClick={() => showNotice("Mais ações disponíveis em breve.")}><MoreVertical aria-hidden="true" /></button></div>
+            <div className="title-actions"><a href="/inscricao" target="_blank" rel="noreferrer">Abrir link de inscrição</a></div>
           </section>
 
           <div className="management-layout">
@@ -145,40 +122,32 @@ export default function ManagementPage() {
 
               {activeTab === "Participantes" ? <>
                 <section className="participants-panel">
-                  <div className="panel-heading"><h2>Participantes <small>({participants.length} de 6 confirmados)</small></h2><button onClick={() => showNotice("Cadastro de participante aberto.")}><Plus aria-hidden="true" />Adicionar participante</button></div>
-                  <div className="participant-table" role="table">
-                    <div className="participant-head" role="row"><span>Pessoa</span><span>Documentos</span><span>Pagamento</span><span>Preparação</span><span className="sr-only">Ações</span></div>
-                    {participants.map((person) => <div className="participant-row" role="row" key={person.name}>
-                      <div className="person"><Image src={person.image} alt="" width={44} height={44} /><p><strong>{person.name}</strong><small>{person.city}</small></p></div>
-                      <div><Status tone={person.documents === "OK" ? "ok" : "warn"}>{person.documents === "OK" ? "● OK" : "● Pendente"}</Status><small>{person.documentNote}</small></div>
-                      <div><Status tone={person.payment === "Pago" ? "ok" : "warn"}>{person.payment === "Pago" ? "● Pago" : `● ${person.payment}`}</Status><small>{person.paymentNote}</small></div>
-                      <div><Status tone={person.preparation === "Concluída" ? "ok" : "warn"}>{person.preparation === "Concluída" ? "● Concluída" : "● Em andamento"}</Status><small>{person.preparationNote}</small></div>
-                      <button className="more-button" aria-label={`Ações de ${person.name}`} onClick={() => showNotice(`Ações de ${person.name}: perfil e histórico.`)}><MoreVertical aria-hidden="true" /></button>
-                    </div>)}
-                  </div>
+                  <div className="panel-heading"><h2>Inscrições recebidas <small>({clients.length} de 12 vagas)</small></h2><a className="panel-link" href="/inscricao" target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a></div>
+                  {clients.length === 0 ? <div className="empty-records"><strong>Nenhuma inscrição recebida ainda.</strong><p>Compartilhe o link de inscrição do Andes Essencial para começar a formar o grupo.</p></div> : <div className="participant-table" role="table">
+                    <div className="participant-head" role="row"><span>Pessoa</span><span>Documentos</span><span>Pagamento</span><span>Preparação</span></div>
+                    {clients.map((client) => { const clientPayments = payments.filter((item) => item.reservations?.clients?.full_name === client.full_name); const paid = clientPayments.every((item) => item.status === "pago") && clientPayments.length > 0; return <div className="participant-row" role="row" key={client.id}>
+                      <div className="person"><span className="client-initials">{client.full_name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><p><strong>{client.full_name}</strong><small>{client.city ?? "Cidade não informada"}</small></p></div>
+                      <div><Status tone={client.passport_number ? "ok" : "warn"}>{client.passport_number ? "● Informado" : "● Pendente"}</Status><small>{client.passport_number ? "Passaporte cadastrado" : "Aguardando documentos"}</small></div>
+                      <div><Status tone={paid ? "ok" : "warn"}>{paid ? "● Pago" : "● Em aberto"}</Status><small>{clientPayments.length ? `${clientPayments.length} lançamento(s)` : "Sem lançamentos"}</small></div>
+                      <div><Status tone={client.emergency_contact_name && client.health_plan ? "ok" : "warn"}>{client.emergency_contact_name && client.health_plan ? "● Completa" : "● Em andamento"}</Status><small>{client.emergency_contact_name && client.health_plan ? "Ficha operacional pronta" : "Completar ficha"}</small></div>
+                    </div>; })}
+                  </div>}
                 </section>
 
                 <section className="checklist-panel">
-                  <div className="panel-heading"><h2>Checklist de preparação da saída</h2><button className="text-action" onClick={() => showNotice("Checklist completo aberto.")}>Ver checklist completo →</button></div>
-                  <div className="checklist-grid">
-                    {[
-                      ["Seguro viagem", "6/6 confirmados", "Verificar apólices →"],
-                      ["Briefing da viagem", "Agendado: 28 set 2026", "Ver detalhes →"],
-                      ["Equipamento", "4/6 confirmados", "Acompanhar →"],
-                      ["Transfer e logística", "Pendente de confirmação", "Resolver →"],
-                    ].map(([title, detail, action], index) => <button className={`check-item ${checklist[index] ? "done" : ""}`} key={title} onClick={() => toggleTask(index)}><span>{checklist[index] ? "✓" : "○"}</span><p><strong>{title}</strong><small>{detail}</small><em>{action}</em></p></button>)}
-                  </div>
+                  <div className="panel-heading"><h2>Próximos passos</h2></div>
+                  <div className="empty-records"><strong>A operação será preparada após as primeiras inscrições.</strong><p>Documentos, rooming list, pagamentos e comunicação serão organizados a partir dos cadastros reais.</p></div>
                 </section>
               </> : <section className="empty-section"><h2>{activeTab}</h2><p>Esta seção está pronta para receber os dados da operação.</p><button onClick={() => setActiveTab("Participantes")}>Voltar aos participantes</button></section>}
             </section>
 
             <aside className="trip-summary">
-              <h2>Ritmo da saída</h2><p>Visão geral financeira e de ocupação</p>
-              <div className="occupancy"><div className="occupancy-ring"><strong>9/10</strong></div><div><b>Ocupação do grupo</b><strong>9 de 10 vagas</strong><small>› 1 vaga disponível</small></div></div>
-              <div className="summary-block"><span>Total recebido</span><div><strong>R$ 71.200</strong><small>de R$ 79.000</small></div><i><b /></i><em>90%</em></div>
-              <div className="payments-list"><div className="section-label"><b>Próximos pagamentos</b><button onClick={() => showNotice("Lista completa de pagamentos aberta.")}>Ver todos</button></div><article><i /><p>Diego Ramos</p><strong>R$ 3.900<small>até 25 set 2026</small></strong></article><article><i /><p>Fernanda Costa</p><strong>R$ 7.900<small>até 30 set 2026</small></strong></article></div>
-              <button className="charge-button" onClick={() => showNotice(`Roteiros de cobrança prontos para ${participants.length - paidCount} pendências.`)}><WalletCards aria-hidden="true" />Cobrar pendências</button>
-              <div className="trip-reminders"><h3>Lembretes da saída</h3><button onClick={() => showNotice("Briefing selecionado.")}><CalendarDays aria-hidden="true" /><span>Briefing online<small>28 set 2026 · 19h</small></span>›</button><button onClick={() => showNotice("Emissão de bilhetes selecionada.")}><Plane aria-hidden="true" /><span>Emissão de bilhetes<small>até 25 set 2026</small></span>›</button><button onClick={() => showNotice("Lista de equipamentos selecionada.")}><FileText aria-hidden="true" /><span>Enviar lista final de equipamentos<small>até 30 set 2026</small></span>›</button></div>
+              <h2>Ritmo da saída</h2><p>Dados reais de ocupação e financeiro</p>
+              <div className="occupancy"><div className="occupancy-ring"><strong>{clients.length}/12</strong></div><div><b>Inscrições recebidas</b><strong>{clients.length} de 12 vagas</strong><small>{Math.max(12 - clients.length, 0)} vaga(s) disponível(is)</small></div></div>
+              <div className="summary-block"><span>Total previsto</span><div><strong>{money(totalPlanned)}</strong><small>Recebido: {money(totalReceived)}</small></div><i><b style={{ width: totalPlanned ? `${Math.round((totalReceived / totalPlanned) * 100)}%` : "0%" }} /></i><em>{totalPlanned ? `${Math.round((totalReceived / totalPlanned) * 100)}%` : "0%"}</em></div>
+              <div className="payments-list"><div className="section-label"><b>Próximos pagamentos</b></div>{payments.filter((item) => item.status !== "pago").slice(0, 3).map((item) => <article key={item.id}><i /><p>{item.reservations?.clients?.full_name ?? "Cliente"}</p><strong>{money(item.amount_cents)}<small>até {new Date(`${item.due_on}T12:00:00`).toLocaleDateString("pt-BR")}</small></strong></article>)}{payments.length === 0 && <p className="empty-payments">Nenhum lançamento financeiro registrado.</p>}</div>
+              <a className="charge-button" href="/inscricao" target="_blank" rel="noreferrer"><Users aria-hidden="true" />Compartilhar inscrição</a>
+              <div className="trip-reminders"><h3>Próximo passo</h3><p>Envie o link de inscrição para os viajantes. A preparação será organizada conforme os cadastros reais entrarem.</p></div>
             </aside>
           </div></>}
         </div>
@@ -190,7 +159,7 @@ export default function ManagementPage() {
 }
 
 function ModulePage({ module, onAction }: { module: typeof modules[keyof typeof modules]; onAction: (message: string) => void }) {
-  return <section className="module-page"><p className="module-eyebrow">{module.eyebrow}</p><h1>{module.title}</h1><p className="module-summary">{module.summary}</p><div className="module-grid">{module.cards.map(([label, detail, action]) => <article key={label}><span>{label}</span><strong>{detail}</strong><button onClick={() => onAction(`${action}: fluxo preparado para conexão com os dados reais.`)}>{action} →</button></article>)}</div><section className="module-workspace"><div><h2>Espaço de trabalho</h2><p>Em breve, esta visão será alimentada pelos dados do Supabase e pelo histórico da equipe.</p></div><button onClick={() => onAction("Novo registro aberto.")}><Plus aria-hidden="true" />Novo registro</button></section></section>;
+  return <section className="module-page"><p className="module-eyebrow">{module.eyebrow}</p><h1>{module.title}</h1><p className="module-summary">{module.summary}</p><section className="module-workspace"><div><h2>Aguardando dados reais</h2><p>Esta área será preenchida conforme chegarem inscrições, contatos e registros da equipe.</p></div><a href="/inscricao" target="_blank" rel="noreferrer">Abrir inscrição do Andes</a></section></section>;
 }
 
 function ClientsModule({ clients, loading, onAction }: { clients: ClientRecord[]; loading: boolean; onAction: (message: string) => void }) {
@@ -205,4 +174,19 @@ function CommunicationModule({ onAction }: { onAction: (message: string) => void
   const templates: Record<string, string> = { "Cobrança de parcela": "Olá, {nome}! Tudo bem? Passando para lembrar que a próxima parcela da sua viagem vence em {data}. Posso ajudar com algo?", "Documentos pendentes": "Olá, {nome}! Para concluirmos sua preparação, precisamos receber {documento}. Você consegue nos enviar por aqui?", "Briefing da viagem": "Olá, {nome}! Nosso briefing da viagem acontece em {data}, às {hora}. Vamos compartilhar os detalhes finais e tirar dúvidas." };
   const openWhatsApp = () => { window.open(`https://wa.me/?text=${encodeURIComponent(templates[selected])}`, "_blank", "noopener,noreferrer"); onAction("Roteiro aberto no WhatsApp. Registre o contato na ficha do cliente após o envio."); };
   return <section className="module-page"><p className="module-eyebrow">WhatsApp e relacionamento</p><h1>Conversas que aproximam</h1><p className="module-summary">Escolha um roteiro, personalize os campos e mantenha cada contato coerente com a experiência Ekonova.</p><section className="communication-layout"><div className="template-list">{Object.keys(templates).map((name) => <button key={name} className={selected === name ? "selected" : ""} onClick={() => setSelected(name)}><strong>{name}</strong><small>WhatsApp · saída</small></button>)}</div><article className="message-preview"><span>Prévia da mensagem</span><p>{templates[selected]}</p><small>Os campos entre chaves são preenchidos com os dados do cliente.</small><button onClick={openWhatsApp}><MessageCircle aria-hidden="true" />Abrir no WhatsApp</button></article></section><section className="module-workspace"><div><h2>Histórico de contatos</h2><p>O próximo registro enviado ficará salvo no histórico do cliente, junto com reservas e pagamentos.</p></div><button onClick={() => onAction("Selecione um cliente para registrar um contato manual.")}><Plus aria-hidden="true" />Registrar contato</button></section></section>;
+}
+
+function ReportsModule({ clients, payments }: { clients: ClientRecord[]; payments: PaymentRecord[] }) {
+  const total = payments.reduce((sum, item) => sum + item.amount_cents, 0);
+  const received = payments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
+  const open = total - received;
+  const travelers = new Set(payments.map((item) => item.reservations?.clients?.full_name).filter(Boolean)).size;
+  const openInstallments = payments.filter((item) => item.status !== "pago").sort((a, b) => a.due_on.localeCompare(b.due_on));
+  const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value / 100);
+  return <section className="module-page"><p className="module-eyebrow">Leitura do negócio</p><h1>Relatórios de jornadas</h1><p className="module-summary">Visão atualizada de inscrições, ocupação e fluxo financeiro do Andes Essencial.</p><div className="module-grid report-grid"><article><span>Clientes cadastrados</span><strong>{clients.length}</strong><small>Fichas disponíveis na gestão</small></article><article><span>Viajantes com reserva</span><strong>{travelers}</strong><small>Inscrições recebidas para a saída</small></article><article><span>Receita prevista</span><strong>{money(total)}</strong><small>Somatório das entradas e parcelas</small></article><article><span>Recebido</span><strong>{money(received)}</strong><small>Pagamentos marcados como pagos</small></article><article><span>Em aberto</span><strong>{money(open)}</strong><small>{openInstallments.length} cobrança(s) pendente(s)</small></article><article><span>Próximo vencimento</span><strong>{openInstallments[0] ? new Date(`${openInstallments[0].due_on}T12:00:00`).toLocaleDateString("pt-BR") : "Sem pendências"}</strong><small>{openInstallments[0]?.reservations?.clients?.full_name ?? "Tudo regular"}</small></article></div><section className="module-workspace report-workspace"><div><h2>Parcelas em acompanhamento</h2><p>{openInstallments.length ? "Use esta lista para priorizar os próximos contatos da equipe." : "Não há pagamentos pendentes registrados."}</p></div></section>{openInstallments.length > 0 && <div className="clients-list financial-list">{openInstallments.slice(0, 8).map((payment) => <article key={payment.id}><span>!</span><div><strong>{payment.reservations?.clients?.full_name ?? "Cliente"}</strong><small>Vencimento: {new Date(`${payment.due_on}T12:00:00`).toLocaleDateString("pt-BR")}</small></div><b>{money(payment.amount_cents)}</b></article>)}</div>}</section>;
+}
+
+function FinanceModule({ payments, onAction }: { payments: PaymentRecord[]; onAction: (message: string) => void }) {
+  const total = payments.reduce((sum, item) => sum + item.amount_cents, 0); const received = payments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0); const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value / 100);
+  return <section className="module-page"><p className="module-eyebrow">Financeiro</p><h1>Pagamentos com clareza</h1><p className="module-summary">Parcelas, vencimentos e cobranças conectados à jornada de cada viajante.</p><div className="module-grid"><article><span>Total previsto</span><strong>{money(total)}</strong></article><article><span>Recebido</span><strong>{money(received)}</strong></article><article><span>Em aberto</span><strong>{money(total - received)}</strong></article></div><div className="clients-list financial-list">{payments.map((payment) => <article key={payment.id}><span>{payment.status === "pago" ? "✓" : "!"}</span><div><strong>{payment.reservations?.clients?.full_name ?? "Cliente"}</strong><small>Vencimento: {new Date(`${payment.due_on}T12:00:00`).toLocaleDateString("pt-BR")}</small></div><b>{money(payment.amount_cents)}</b><button onClick={() => onAction("Roteiro de cobrança pronto no módulo Comunicação.")}>{payment.status === "pago" ? "Pago" : "Cobrar →"}</button></article>)}</div></section>;
 }
