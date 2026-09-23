@@ -9,6 +9,7 @@ import {
   ClipboardCheck,
   FileText,
   Landmark,
+  MessageCircle,
   LayoutDashboard,
   MapPinned,
   MoreVertical,
@@ -46,8 +47,20 @@ const participants: Participant[] = [
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
-  [ClipboardCheck, "Operações"], [Plane, "Equipamentos"], [FileText, "Documentos"], [Landmark, "Relatórios"],
+  [ClipboardCheck, "Operações"], [Plane, "Equipamentos"], [FileText, "Documentos"], [MessageCircle, "Comunicação"], [Landmark, "Relatórios"],
 ] as const;
+
+const modules = {
+  "Início": { eyebrow: "Visão do dia", title: "A jornada da equipe", summary: "3 pendências, 2 pagamentos e 1 saída com briefing esta semana.", cards: [["Saídas próximas", "Andes Essencial · 02 out", "Ver agenda"], ["Clientes ativos", "26 viajantes em preparação", "Ver clientes"], ["Atenção hoje", "3 documentos aguardando", "Organizar"]] },
+  "Saídas": { eyebrow: "Saídas", title: "Andes Essencial", summary: "Acompanhamento completo da saída: participantes, preparação e ritmo financeiro.", cards: [["Participantes", "9 de 10 vagas ocupadas", "Abrir saída"], ["Pendências", "3 itens em andamento", "Ver checklist"], ["Financeiro", "R$ 71.200 recebidos", "Acompanhar"]] },
+  "Clientes": { eyebrow: "Relacionamento", title: "Clientes e viajantes", summary: "Cadastros, histórico de contatos, preferências e documentos em um só lugar.", cards: [["Novos contatos", "8 interessados nas últimas 2 semanas", "Ver funil"], ["Perfis completos", "21 de 26 com cadastro atualizado", "Revisar"], ["Próximo acompanhamento", "Diego Ramos · hoje, 16h", "Abrir conversa"]] },
+  "Financeiro": { eyebrow: "Fluxo financeiro", title: "Pagamentos com clareza", summary: "Acompanhe entradas, parcelas e cobranças sem perder o contexto de cada viagem.", cards: [["A receber", "R$ 11.800 até 30 set", "Ver parcelas"], ["Recebido no mês", "R$ 71.200", "Abrir visão"], ["Cobranças prontas", "2 mensagens de WhatsApp", "Enviar roteiros"]] },
+  "Operações": { eyebrow: "Bastidores da viagem", title: "Operação sem improvisos", summary: "Briefings, transfers, seguros e fornecedores organizados por saída.", cards: [["Checklist Andes", "12 de 16 itens concluídos", "Continuar"], ["Próxima decisão", "Confirmar transfer de chegada", "Resolver"], ["Fornecedores", "7 confirmações registradas", "Consultar"]] },
+  "Equipamentos": { eyebrow: "Preparação", title: "Equipamentos e segurança", summary: "Controle a preparação dos viajantes e antecipe itens críticos.", cards: [["Lista final", "4 viajantes ainda pendentes", "Acompanhar"], ["Itens alugados", "6 itens reservados", "Ver reservas"], ["Segurança", "6 seguros validados", "Conferir"]] },
+  "Documentos": { eyebrow: "Conferência", title: "Documentos em dia", summary: "Passaportes, seguros e termos reunidos na ficha de cada participante.", cards: [["Pendentes", "3 documentos exigem atenção", "Ver pendências"], ["Validados", "23 documentos conferidos", "Consultar"], ["Vencimentos", "1 passaporte precisa revisão", "Revisar"]] },
+  "Comunicação": { eyebrow: "WhatsApp e relacionamento", title: "Conversas que aproximam", summary: "Use roteiros consistentes para briefing, cobranças, documentos e pré-viagem.", cards: [["Roteiro pronto", "Cobrança de parcela · Diego Ramos", "Abrir WhatsApp"], ["Mensagem programada", "Lista de equipamentos · 30 set", "Editar"], ["Histórico", "18 contatos registrados este mês", "Ver conversas"]] },
+  "Relatórios": { eyebrow: "Leitura do negócio", title: "Relatórios de jornadas", summary: "Resultados de ocupação, receita e relacionamento para decisões mais seguras.", cards: [["Ocupação", "90% na saída Andes Essencial", "Abrir relatório"], ["Receita", "R$ 71.200 confirmados", "Ver detalhes"], ["Relacionamento", "92% de respostas em até 24h", "Analisar"]] },
+} as const;
 
 function Status({ children, tone = "ok" }: { children: React.ReactNode; tone?: "ok" | "warn" | "neutral" }) {
   return <span className={`management-status ${tone}`}>{children}</span>;
@@ -55,6 +68,7 @@ function Status({ children, tone = "ok" }: { children: React.ReactNode; tone?: "
 
 export default function ManagementPage() {
   const [activeTab, setActiveTab] = useState("Participantes");
+  const [activeModule, setActiveModule] = useState<keyof typeof modules>("Saídas");
   const [checklist, setChecklist] = useState([true, true, false, false]);
   const [notice, setNotice] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
@@ -87,7 +101,7 @@ export default function ManagementPage() {
           <small>Viagens que transformam</small>
         </a>
         <nav>
-          {navItems.map(([Icon, label]) => <button className={label === "Saídas" ? "active" : ""} key={label} onClick={() => showNotice(`${label}: módulo em preparação.`)}><Icon aria-hidden="true" />{label}</button>)}
+          {navItems.map(([Icon, label]) => <button className={activeModule === label ? "active" : ""} key={label} onClick={() => setActiveModule(label as keyof typeof modules)}><Icon aria-hidden="true" />{label}</button>)}
         </nav>
         <div className="management-side-bottom">
           <button onClick={() => showNotice("Configurações: em breve.")}><Settings aria-hidden="true" />Configurações</button>
@@ -104,6 +118,7 @@ export default function ManagementPage() {
         </header>
 
         <div className="management-page">
+          {activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
           <button className="back-link" onClick={() => window.history.back()}>← Voltar para saídas</button>
           <section className="management-title-row">
             <div>
@@ -157,11 +172,15 @@ export default function ManagementPage() {
               <button className="charge-button" onClick={() => showNotice(`Roteiros de cobrança prontos para ${participants.length - paidCount} pendências.`)}><WalletCards aria-hidden="true" />Cobrar pendências</button>
               <div className="trip-reminders"><h3>Lembretes da saída</h3><button onClick={() => showNotice("Briefing selecionado.")}><CalendarDays aria-hidden="true" /><span>Briefing online<small>28 set 2026 · 19h</small></span>›</button><button onClick={() => showNotice("Emissão de bilhetes selecionada.")}><Plane aria-hidden="true" /><span>Emissão de bilhetes<small>até 25 set 2026</small></span>›</button><button onClick={() => showNotice("Lista de equipamentos selecionada.")}><FileText aria-hidden="true" /><span>Enviar lista final de equipamentos<small>até 30 set 2026</small></span>›</button></div>
             </aside>
-          </div>
+          </div></>}
         </div>
       </section>
       {!supabaseConfigured && <div className="management-demo-note">Modo de demonstração — conecte o Supabase para ativar acesso e dados reais.</div>}
       {notice && <div className="management-toast" role="status">{notice}<button aria-label="Fechar" onClick={() => setNotice(null)}><X aria-hidden="true" /></button></div>}
     </main>
   );
+}
+
+function ModulePage({ module, onAction }: { module: typeof modules[keyof typeof modules]; onAction: (message: string) => void }) {
+  return <section className="module-page"><p className="module-eyebrow">{module.eyebrow}</p><h1>{module.title}</h1><p className="module-summary">{module.summary}</p><div className="module-grid">{module.cards.map(([label, detail, action]) => <article key={label}><span>{label}</span><strong>{detail}</strong><button onClick={() => onAction(`${action}: fluxo preparado para conexão com os dados reais.`)}>{action} →</button></article>)}</div><section className="module-workspace"><div><h2>Espaço de trabalho</h2><p>Em breve, esta visão será alimentada pelos dados do Supabase e pelo histórico da equipe.</p></div><button onClick={() => onAction("Novo registro aberto.")}><Plus aria-hidden="true" />Novo registro</button></section></section>;
 }
