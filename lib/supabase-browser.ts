@@ -1,6 +1,7 @@
 "use client";
 
 type Session = { access_token: string; refresh_token: string; user: { id: string; email?: string } };
+export type ClientRecord = { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; created_at: string };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -52,4 +53,15 @@ export async function updatePassword(accessToken: string, password: string) {
   const payload = await response.json() as Session & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível definir a nova senha.");
   return payload;
+}
+
+export async function listClients() {
+  const session = getSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/clients?select=id,full_name,email,phone,city,created_at&order=created_at.desc"), {
+    headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` },
+  });
+  const payload = await response.json() as ClientRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os clientes.");
+  return payload as ClientRecord[];
 }
