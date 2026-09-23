@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import "./inscricao.css";
 
 const DOUBLE_PRICE = 1399;
@@ -65,7 +66,7 @@ export default function InscricaoPage() {
 
   return (
     <main className="booking-shell">
-      <header><a href="/">Ekonova <span>Adventure</span></a><p>Inscrição de viagem</p></header>
+      <header><a className="booking-logo" href="/"><Image src="/ekonova-logo.png" alt="Ekonova Adventure" width={204} height={75} priority /></a><p>Inscrição de viagem</p></header>
       <section className="booking-hero">
         <p>10 A 17 DE MARÇO DE 2027 · MENDOZA, ARGENTINA</p>
         <h1>Trekking, altitude e vinhos nos Andes.</h1>
