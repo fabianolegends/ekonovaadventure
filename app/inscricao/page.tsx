@@ -46,7 +46,7 @@ export default function InscricaoPage() {
             <button type="button" className={room === "single" ? "selected" : ""} onClick={() => setRoom("single")}><strong>Quarto single</strong><small>Hospedagem solo: adicional de US$ 300,00</small><b>{formatUsd(DOUBLE_PRICE + SINGLE_SUPPLEMENT)}</b></button>
           </fieldset>
           <fieldset><legend>Forma de pagamento</legend>
-            <button type="button" className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>30% de entrada e saldo em Pix, com último pagamento em janeiro de 2027</small><b>Entrada {formatUsd(entry)}</b></button>
+            <button type="button" className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>30% de entrada e saldo em Pix, com último pagamento em janeiro de 2027</small><b>30% · {formatUsd(entry)}</b></button>
             <button type="button" className={payment === "avista" ? "selected" : ""} onClick={() => setPayment("avista")}><strong>Pagamento à vista</strong><small>Desconto de 5% sobre o valor do pacote</small><b>{formatUsd(packagePrice * 0.95)}</b></button>
           </fieldset>
           {payment === "pix" && <fieldset><legend>Planeje o Pix</legend>
