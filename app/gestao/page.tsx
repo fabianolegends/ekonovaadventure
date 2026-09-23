@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { createClient, getSession, listClients, listPayments, signOut, supabaseConfigured, type ClientRecord, type PaymentRecord } from "../../lib/supabase-browser";
+import { assignReservationToRoom, createClient, createRoomGroup, getSession, listClients, listPayments, listReservations, listRoomGroups, signOut, supabaseConfigured, type ClientRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
@@ -52,6 +52,8 @@ export default function ManagementPage() {
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [reservations, setReservations] = useState<ReservationRecord[]>([]);
+  const [roomGroups, setRoomGroups] = useState<RoomGroupRecord[]>([]);
 
   useEffect(() => {
     if (!supabaseConfigured) { setCheckingAccess(false); return; }
@@ -67,6 +69,8 @@ export default function ManagementPage() {
     listClients().then(setClients).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os clientes.")).finally(() => setClientsLoading(false));
   }, [activeModule]);
   useEffect(() => { if (["Saídas", "Financeiro", "Relatórios"].includes(activeModule) && supabaseConfigured) listPayments().then(setPayments).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar pagamentos.")); }, [activeModule]);
+  useEffect(() => { if (activeModule === "Saídas" && supabaseConfigured) listReservations().then(setReservations).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar as reservas.")); }, [activeModule]);
+  useEffect(() => { const departureId = reservations[0]?.departure_id; if (activeModule === "Saídas" && departureId) listRoomGroups(departureId).then(setRoomGroups).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os quartos.")); }, [activeModule, reservations]);
 
   const totalPlanned = payments.reduce((sum, item) => sum + item.amount_cents, 0);
   const totalReceived = payments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
@@ -117,10 +121,10 @@ export default function ManagementPage() {
           <div className="management-layout">
             <section className="management-main-column">
               <div className="management-tabs" role="tablist" aria-label="Seções da saída">
-                {["Participantes", "Roteiro", "Operações", "Financeiro", "Documentos", "Comunicação"].map((tab) => <button role="tab" aria-selected={activeTab === tab} className={activeTab === tab ? "selected" : ""} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}
+                {["Participantes", "Rooming list", "Roteiro", "Operações", "Financeiro", "Documentos", "Comunicação"].map((tab) => <button role="tab" aria-selected={activeTab === tab} className={activeTab === tab ? "selected" : ""} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}
               </div>
 
-              {activeTab === "Participantes" ? <>
+              {activeTab === "Rooming list" ? <RoomingListModule reservations={reservations} groups={roomGroups} onChange={async () => { const departureId = reservations[0]?.departure_id; if (departureId) setRoomGroups(await listRoomGroups(departureId)); }} onNotice={showNotice} /> : activeTab === "Participantes" ? <>
                 <section className="participants-panel">
                   <div className="panel-heading"><h2>Inscrições recebidas <small>({clients.length} de 12 vagas)</small></h2><a className="panel-link" href="/inscricao" target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a></div>
                   {clients.length === 0 ? <div className="empty-records"><strong>Nenhuma inscrição recebida ainda.</strong><p>Compartilhe o link de inscrição do Andes Essencial para começar a formar o grupo.</p></div> : <div className="participant-table" role="table">
@@ -160,6 +164,24 @@ export default function ManagementPage() {
 
 function ModulePage({ module, onAction }: { module: typeof modules[keyof typeof modules]; onAction: (message: string) => void }) {
   return <section className="module-page"><p className="module-eyebrow">{module.eyebrow}</p><h1>{module.title}</h1><p className="module-summary">{module.summary}</p><section className="module-workspace"><div><h2>Aguardando dados reais</h2><p>Esta área será preenchida conforme chegarem inscrições, contatos e registros da equipe.</p></div><a href="/inscricao" target="_blank" rel="noreferrer">Abrir inscrição do Andes</a></section></section>;
+}
+
+function RoomingListModule({ reservations, groups, onChange, onNotice }: { reservations: ReservationRecord[]; groups: RoomGroupRecord[]; onChange: () => Promise<void>; onNotice: (message: string) => void }) {
+  const [roomLabel, setRoomLabel] = useState("");
+  const [roomType, setRoomType] = useState<RoomGroupRecord["room_type"]>("twin");
+  const csvCell = (value: string | null | undefined) => `"${(value ?? "").replaceAll('"', '""')}"`;
+  function exportCsv() {
+    const header = ["Nome completo", "Quarto", "Tipo de quarto", "E-mail", "Telefone", "Cidade", "CPF", "RG", "Passaporte", "Contato de segurança", "Telefone de segurança", "Plano de saúde / seguro", "Telefone do plano", "Pagamento"];
+    const rows = reservations.map((reservation) => { const client = reservation.clients; const group = groups.find((item) => item.room_group_members.some((member) => member.reservation_id === reservation.id)); return [client?.full_name, group?.label ?? "Não alocado", group?.room_type ?? "", client?.email, client?.phone, [client?.city, client?.state].filter(Boolean).join(" - "), client?.cpf, client?.rg, client?.passport_number, client?.emergency_contact_name, client?.emergency_contact_phone, client?.health_plan, client?.health_plan_phone, reservation.payment_plan].map(csvCell).join(";"); });
+    const csv = [header.map(csvCell).join(";"), ...rows].join("\n");
+    const href = URL.createObjectURL(new Blob(["\ufeff", csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a"); link.href = href; link.download = "rooming-list-andes-essencial.csv"; link.click(); URL.revokeObjectURL(href);
+  }
+  const singles = reservations.filter((item) => item.room_type === "single").length;
+  const doubles = reservations.length - singles;
+  async function addRoom(event: React.FormEvent) { event.preventDefault(); const departureId = reservations[0]?.departure_id; if (!departureId || !roomLabel.trim()) return; try { await createRoomGroup({ departure_id: departureId, label: roomLabel.trim(), room_type: roomType }); setRoomLabel(""); await onChange(); } catch (error) { onNotice(error instanceof Error ? error.message : "Não foi possível criar o quarto."); } }
+  async function assign(reservationId: string, roomGroupId: string) { if (!roomGroupId) return; try { await assignReservationToRoom(reservationId, roomGroupId); await onChange(); } catch (error) { onNotice(error instanceof Error ? error.message : "Não foi possível alocar o viajante."); } }
+  return <section className="rooming-list"><div className="rooming-heading"><div><p className="module-eyebrow">OPERAÇÃO</p><h2>Plano de acomodação</h2><p>Andes Essencial · 10–17 mar 2027 · Mendoza, Argentina</p></div><button disabled={!reservations.length || reservations.some((reservation) => !groups.some((group) => group.room_group_members.some((member) => member.reservation_id === reservation.id)))} onClick={exportCsv}>Emitir CSV final</button></div><div className="rooming-stats"><article><span>Inscritos</span><strong>{reservations.length}</strong></article><article><span>Preferência duplo</span><strong>{doubles}</strong></article><article><span>Preferência single</span><strong>{singles}</strong></article></div>{reservations.length === 0 ? <div className="empty-records"><strong>A rooming list será formada automaticamente.</strong><p>Assim que uma inscrição real for concluída, ela aparecerá aqui com os dados necessários para hotel e operação.</p></div> : <><form className="room-form" onSubmit={addRoom}><input value={roomLabel} onChange={(event) => setRoomLabel(event.target.value)} placeholder="Ex.: Quarto 101" required /><select value={roomType} onChange={(event) => setRoomType(event.target.value as RoomGroupRecord["room_type"])}><option value="matrimonial">Matrimonial</option><option value="twin">Doble twin</option><option value="single">Single</option></select><button>Criar quarto</button></form><div className="room-groups">{groups.map((group) => <article key={group.id}><header><strong>{group.label}</strong><span>{group.room_type === "matrimonial" ? "Matrimonial" : group.room_type === "twin" ? "Doble twin" : "Single"}</span></header>{group.room_group_members.length ? group.room_group_members.map((member) => <p key={member.reservation_id}>{reservations.find((reservation) => reservation.id === member.reservation_id)?.clients?.full_name ?? "Viajante"}</p>) : <small>Sem viajantes alocados.</small>}</article>)}</div><div className="rooming-table"><div className="rooming-head"><span>Viajante</span><span>Preferência</span><span>Alocação</span><span>Segurança e saúde</span></div>{reservations.map((reservation) => { const client = reservation.clients; const current = groups.find((group) => group.room_group_members.some((member) => member.reservation_id === reservation.id)); return <article key={reservation.id}><div><strong>{client?.full_name ?? "Viajante"}</strong><small>{client?.email ?? "E-mail não informado"}</small></div><span>{reservation.room_type === "single" ? "Single" : "Duplo"}</span><select value={current?.id ?? ""} onChange={(event) => assign(reservation.id, event.target.value)}><option value="">Selecionar quarto</option>{groups.map((group) => <option key={group.id} value={group.id}>{group.label} · {group.room_type === "twin" ? "Doble twin" : group.room_type}</option>)}</select><div><strong>{client?.emergency_contact_name ?? "Contato pendente"}</strong><small>{client?.health_plan ?? "Plano de saúde pendente"}</small></div></article>; })}</div></>}</section>;
 }
 
 function ClientsModule({ clients, loading, onAction }: { clients: ClientRecord[]; loading: boolean; onAction: (message: string) => void }) {
