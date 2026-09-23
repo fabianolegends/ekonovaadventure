@@ -21,7 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
-import { getSession, signOut, supabaseConfigured } from "../../lib/supabase-browser";
+import { getSession, listClients, signOut, supabaseConfigured, type ClientRecord } from "../../lib/supabase-browser";
 
 type Participant = {
   name: string;
@@ -73,6 +73,8 @@ export default function ManagementPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [clients, setClients] = useState<ClientRecord[]>([]);
+  const [clientsLoading, setClientsLoading] = useState(false);
   const paidCount = useMemo(() => participants.filter((person) => person.payment === "Pago").length, []);
 
   useEffect(() => {
@@ -82,6 +84,12 @@ export default function ManagementPage() {
     setUserEmail(session.user.email ?? null);
     setCheckingAccess(false);
   }, []);
+
+  useEffect(() => {
+    if (activeModule !== "Clientes" || !supabaseConfigured) return;
+    setClientsLoading(true);
+    listClients().then(setClients).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os clientes.")).finally(() => setClientsLoading(false));
+  }, [activeModule]);
 
   function toggleTask(index: number) {
     setChecklist((current) => current.map((done, itemIndex) => itemIndex === index ? !done : done));
@@ -118,7 +126,7 @@ export default function ManagementPage() {
         </header>
 
         <div className="management-page">
-          {activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
+          {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
           <button className="back-link" onClick={() => window.history.back()}>← Voltar para saídas</button>
           <section className="management-title-row">
             <div>
@@ -183,4 +191,8 @@ export default function ManagementPage() {
 
 function ModulePage({ module, onAction }: { module: typeof modules[keyof typeof modules]; onAction: (message: string) => void }) {
   return <section className="module-page"><p className="module-eyebrow">{module.eyebrow}</p><h1>{module.title}</h1><p className="module-summary">{module.summary}</p><div className="module-grid">{module.cards.map(([label, detail, action]) => <article key={label}><span>{label}</span><strong>{detail}</strong><button onClick={() => onAction(`${action}: fluxo preparado para conexão com os dados reais.`)}>{action} →</button></article>)}</div><section className="module-workspace"><div><h2>Espaço de trabalho</h2><p>Em breve, esta visão será alimentada pelos dados do Supabase e pelo histórico da equipe.</p></div><button onClick={() => onAction("Novo registro aberto.")}><Plus aria-hidden="true" />Novo registro</button></section></section>;
+}
+
+function ClientsModule({ clients, loading, onAction }: { clients: ClientRecord[]; loading: boolean; onAction: (message: string) => void }) {
+  return <section className="module-page"><p className="module-eyebrow">Relacionamento</p><h1>Clientes e viajantes</h1><p className="module-summary">Cadastros, histórico de conversas, preferências e dados de preparação em uma única ficha.</p><section className="module-workspace clients-workspace"><div><h2>{loading ? "Carregando clientes…" : `${clients.length} clientes cadastrados`}</h2><p>{clients.length ? "Selecione um cliente para ver contatos, reservas e pagamentos." : "Seu primeiro cadastro aparecerá aqui assim que for criado."}</p></div><button onClick={() => onAction("Cadastro de cliente será aberto na próxima etapa.")}><Plus aria-hidden="true" />Novo cliente</button></section>{clients.length > 0 && <div className="clients-list">{clients.map((client) => <article key={client.id}><span>{client.full_name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><div><strong>{client.full_name}</strong><small>{[client.city, client.email, client.phone].filter(Boolean).join(" · ")}</small></div><button onClick={() => onAction(`Ficha de ${client.full_name} selecionada.`)}>Ver ficha →</button></article>)}</div>}</section>;
 }
