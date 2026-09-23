@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "./gestao/gestao.css";
+@import "./gestao/login.css";
 
 :root {
   --forest: #123d2c;
