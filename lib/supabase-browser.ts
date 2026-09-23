@@ -2,6 +2,7 @@
 
 type Session = { access_token: string; refresh_token: string; user: { id: string; email?: string } };
 export type ClientRecord = { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; cpf: string | null; rg: string | null; passport_number: string | null; street: string | null; neighborhood: string | null; postal_code: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null; created_at: string };
+export type PaymentRecord = { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { status: string; clients: { full_name: string } | null } | null };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -72,4 +73,12 @@ export async function createClient(input: Omit<ClientRecord, "id" | "created_at"
   const payload = await response.json() as ClientRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível cadastrar o cliente.");
   return payload[0] as ClientRecord;
+}
+
+export async function listPayments() {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(status,clients(full_name))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as PaymentRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os pagamentos.");
+  return payload as PaymentRecord[];
 }
