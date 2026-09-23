@@ -14,6 +14,8 @@ export default function InscricaoPage() {
   const [installments, setInstallments] = useState(3);
   const [entryDate, setEntryDate] = useState("");
   const [done, setDone] = useState(false);
+  const [completeForm, setCompleteForm] = useState(false);
+  const [finalized, setFinalized] = useState(false);
 
   const packagePrice = DOUBLE_PRICE + (room === "single" ? SINGLE_SUPPLEMENT : 0);
   const cashDiscount = payment === "avista" ? packagePrice * 0.05 : 0;
@@ -22,7 +24,7 @@ export default function InscricaoPage() {
   const balance = Math.round((total - entry) * 100) / 100;
   const installment = Math.ceil((balance / installments) * 100) / 100;
 
-  const submit = (event: React.FormEvent) => { event.preventDefault(); setDone(true); };
+  const submit = (event: React.FormEvent) => { event.preventDefault(); setDone(true); setCompleteForm(true); };
 
   return (
     <main className="booking-shell">
@@ -51,8 +53,33 @@ export default function InscricaoPage() {
             <label>Data desejada para a entrada de 30%<input type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} required /></label>
             <label>Parcelas do saldo<select value={installments} onChange={(event) => setInstallments(Number(event.target.value))}>{[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value}x de {formatUsd(Math.ceil((balance / value) * 100) / 100)}</option>)}</select></label>
           </fieldset>}
-          <button className="booking-submit">Continuar pré-inscrição</button>
-          {done && <p className="booking-success">Pré-inscrição preparada. Seus dados serão conferidos antes da confirmação e do envio do resumo por e-mail.</p>}
+          <button className="booking-submit">Continuar para cadastro completo</button>
+          {done && <p className="booking-success">Agora complete sua ficha de viajante abaixo. Esses dados serão usados para a room list e a operação da viagem.</p>}
+
+          {completeForm && <section className="traveler-details">
+            <p className="booking-eyebrow">FICHA DO VIAJANTE</p>
+            <h2>Cadastro completo</h2>
+            <p className="booking-intro">Preencha exatamente como consta nos documentos que serão utilizados na viagem.</p>
+            <fieldset><legend>Documentos</legend>
+              <label>CPF<input required placeholder="000.000.000-00" /></label>
+              <label>RG<input required placeholder="Número do RG" /></label>
+              <label>Passaporte<input required placeholder="Número do passaporte" /></label>
+            </fieldset>
+            <fieldset><legend>Endereço</legend>
+              <label>Rua e número<input required placeholder="Rua, número e complemento" /></label>
+              <label>Bairro<input required placeholder="Seu bairro" /></label>
+              <label>Cidade / UF<input required placeholder="Cidade - Estado" /></label>
+              <label>CEP<input required placeholder="00000-000" /></label>
+            </fieldset>
+            <fieldset><legend>Segurança e saúde</legend>
+              <label>Nome do contato de segurança<input required placeholder="Nome completo" /></label>
+              <label>Telefone do contato de segurança<input required placeholder="(00) 00000-0000" /></label>
+              <label>Plano de saúde / seguro viagem<input required placeholder="Nome do plano ou seguro" /></label>
+              <label>Telefone do plano de saúde / seguro<input required placeholder="Telefone de atendimento" /></label>
+            </fieldset>
+            <button type="button" className="booking-submit" onClick={() => setFinalized(true)}>Finalizar cadastro do viajante</button>
+            {finalized && <p className="booking-success">Ficha completa revisada. A equipe Ekonova entrará em contato para confirmar a reserva e os próximos passos.</p>}
+          </section>}
         </section>
         <aside className="booking-summary">
           <p>Resumo da reserva</p><h2>Andes Essencial</h2>
