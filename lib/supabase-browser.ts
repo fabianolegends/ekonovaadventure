@@ -38,7 +38,18 @@ export async function requestPasswordReset(email: string) {
   const response = await fetch(endpoint("/auth/v1/recover"), {
     method: "POST",
     headers: { apikey: key!, "Content-Type": "application/json" },
-    body: JSON.stringify({ email, redirect_to: `${window.location.origin}/gestao/login` }),
+    body: JSON.stringify({ email, redirect_to: "https://www.ekonovaadv.com.br/gestao/login" }),
   });
   if (!response.ok) throw new Error("Não foi possível enviar o e-mail de recuperação.");
+}
+
+export async function updatePassword(accessToken: string, password: string) {
+  const response = await fetch(endpoint("/auth/v1/user"), {
+    method: "PUT",
+    headers: { apikey: key!, Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ password }),
+  });
+  const payload = await response.json() as Session & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível definir a nova senha.");
+  return payload;
 }
