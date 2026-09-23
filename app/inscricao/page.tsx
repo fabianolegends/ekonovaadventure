@@ -16,6 +16,8 @@ export default function InscricaoPage() {
   const [done, setDone] = useState(false);
   const [completeForm, setCompleteForm] = useState(false);
   const [finalized, setFinalized] = useState(false);
+  const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   const packagePrice = DOUBLE_PRICE + (room === "single" ? SINGLE_SUPPLEMENT : 0);
   const cashDiscount = payment === "avista" ? packagePrice * 0.05 : 0;
@@ -24,7 +26,43 @@ export default function InscricaoPage() {
   const balance = Math.round((total - entry) * 100) / 100;
   const installment = Math.ceil((balance / installments) * 100) / 100;
 
-  const submit = (event: React.FormEvent) => { event.preventDefault(); setDone(true); setCompleteForm(true); };
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!completeForm) {
+      setDone(true);
+      setCompleteForm(true);
+      return;
+    }
+    const data = new FormData(event.currentTarget);
+    const email = String(data.get("email") || "");
+    setRegisteredEmail(email);
+    setFinalized(true);
+    setEmailStatus("sending");
+    try {
+      const response = await fetch("/api/inscricao", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.get("fullName"),
+          email,
+          room,
+          payment,
+          total,
+          entry,
+          installments,
+          installment,
+          entryDate,
+        }),
+      });
+      setEmailStatus(response.ok ? "sent" : "error");
+    } catch {
+      setEmailStatus("error");
+    }
+  };
+
+  if (finalized) {
+    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Bem-vindo ao Andes Essencial.</h1><p>A equipe Ekonova enviará o contrato para o seu e-mail.</p>{emailStatus === "sending" && <p className="welcome-muted">Preparando o resumo da sua inscrição...</p>}{emailStatus === "sent" && <p className="welcome-success">O resumo da sua reserva foi enviado para {registeredEmail}.</p>}{emailStatus === "error" && <p className="welcome-muted">Seu cadastro foi concluído. O resumo será enviado pela equipe Ekonova após a confirmação do e-mail.</p>}<a href="/">Voltar para a Ekonova Adventure</a></section></main>;
+  }
 
   return (
     <main className="booking-shell">
@@ -38,9 +76,9 @@ export default function InscricaoPage() {
         <section className="booking-card">
           <p className="booking-eyebrow">PRÉ-INSCRIÇÃO</p><h2>Reserve sua vaga</h2>
           <p className="booking-intro">Preencha seus dados. Na próxima etapa, você conclui sua ficha completa de viajante e recebe o resumo da reserva.</p>
-          <label>Nome completo<input required placeholder="Como consta no documento" /></label>
-          <label>E-mail<input type="email" required placeholder="voce@email.com" /></label>
-          <label>WhatsApp<input required placeholder="(00) 00000-0000" /></label>
+          <label>Nome completo<input name="fullName" required placeholder="Como consta no documento" /></label>
+          <label>E-mail<input name="email" type="email" required placeholder="voce@email.com" /></label>
+          <label>WhatsApp<input name="phone" required placeholder="(00) 00000-0000" /></label>
           <fieldset><legend>Hospedagem</legend>
             <button type="button" className={room === "duplo" ? "selected" : ""} onClick={() => setRoom("duplo")}><strong>Quarto duplo</strong><small>Valor padrão do pacote, por pessoa</small><b>{formatUsd(DOUBLE_PRICE)}</b></button>
             <button type="button" className={room === "single" ? "selected" : ""} onClick={() => setRoom("single")}><strong>Quarto single</strong><small>Hospedagem solo: adicional de US$ 300,00</small><b>{formatUsd(DOUBLE_PRICE + SINGLE_SUPPLEMENT)}</b></button>
@@ -61,24 +99,23 @@ export default function InscricaoPage() {
             <h2>Cadastro completo</h2>
             <p className="booking-intro">Preencha exatamente como consta nos documentos que serão utilizados na viagem.</p>
             <fieldset><legend>Documentos</legend>
-              <label>CPF<input required placeholder="000.000.000-00" /></label>
-              <label>RG<input required placeholder="Número do RG" /></label>
-              <label>Passaporte<input required placeholder="Número do passaporte" /></label>
+              <label>CPF<input name="cpf" required placeholder="000.000.000-00" /></label>
+              <label>RG<input name="rg" required placeholder="Número do RG" /></label>
+              <label>Passaporte<input name="passport" required placeholder="Número do passaporte" /></label>
             </fieldset>
             <fieldset><legend>Endereço</legend>
-              <label>Rua e número<input required placeholder="Rua, número e complemento" /></label>
-              <label>Bairro<input required placeholder="Seu bairro" /></label>
-              <label>Cidade / UF<input required placeholder="Cidade - Estado" /></label>
-              <label>CEP<input required placeholder="00000-000" /></label>
+              <label>Rua e número<input name="street" required placeholder="Rua, número e complemento" /></label>
+              <label>Bairro<input name="neighborhood" required placeholder="Seu bairro" /></label>
+              <label>Cidade / UF<input name="city" required placeholder="Cidade - Estado" /></label>
+              <label>CEP<input name="postalCode" required placeholder="00000-000" /></label>
             </fieldset>
             <fieldset><legend>Segurança e saúde</legend>
-              <label>Nome do contato de segurança<input required placeholder="Nome completo" /></label>
-              <label>Telefone do contato de segurança<input required placeholder="(00) 00000-0000" /></label>
-              <label>Plano de saúde / seguro viagem<input required placeholder="Nome do plano ou seguro" /></label>
-              <label>Telefone do plano de saúde / seguro<input required placeholder="Telefone de atendimento" /></label>
+              <label>Nome do contato de segurança<input name="emergencyName" required placeholder="Nome completo" /></label>
+              <label>Telefone do contato de segurança<input name="emergencyPhone" required placeholder="(00) 00000-0000" /></label>
+              <label>Plano de saúde / seguro viagem<input name="healthPlan" required placeholder="Nome do plano ou seguro" /></label>
+              <label>Telefone do plano de saúde / seguro<input name="healthPhone" required placeholder="Telefone de atendimento" /></label>
             </fieldset>
-            <button type="button" className="booking-submit" onClick={() => setFinalized(true)}>Finalizar cadastro do viajante</button>
-            {finalized && <p className="booking-success">Ficha completa revisada. A equipe Ekonova entrará em contato para confirmar a reserva e os próximos passos.</p>}
+            <button className="booking-submit">Finalizar cadastro do viajante</button>
           </section>}
         </section>
         <aside className="booking-summary">
