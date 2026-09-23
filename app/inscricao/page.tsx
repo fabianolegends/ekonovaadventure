@@ -52,9 +52,11 @@ export default function InscricaoPage() {
           installments,
           installment,
           entryDate,
+          profile: Object.fromEntries(data.entries()) as Record<string, string>,
         }),
       });
-      setEmailStatus(response.ok ? "sent" : "error");
+      const result = await response.json().catch(() => null);
+      setEmailStatus(response.ok && result?.emailSent ? "sent" : "error");
     } catch {
       setEmailStatus("error");
     }
