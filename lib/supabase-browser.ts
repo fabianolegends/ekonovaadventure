@@ -3,6 +3,8 @@
 type Session = { access_token: string; refresh_token: string; user: { id: string; email?: string } };
 export type ClientRecord = { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; cpf: string | null; rg: string | null; passport_number: string | null; street: string | null; neighborhood: string | null; postal_code: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null; created_at: string };
 export type PaymentRecord = { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { status: string; clients: { full_name: string } | null } | null };
+export type ReservationRecord = { id: string; departure_id: string; room_type: "duplo" | "single" | null; status: string; payment_plan: string | null; created_at: string; clients: { full_name: string; email: string | null; phone: string | null; city: string | null; state: string | null; cpf: string | null; rg: string | null; passport_number: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null } | null };
+export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -81,4 +83,38 @@ export async function listPayments() {
   const payload = await response.json() as PaymentRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os pagamentos.");
   return payload as PaymentRecord[];
+}
+
+export async function listReservations() {
+  const session = getSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/reservations?select=id,departure_id,room_type,status,payment_plan,created_at,clients(full_name,email,phone,city,state,cpf,rg,passport_number,emergency_contact_name,emergency_contact_phone,health_plan,health_plan_phone)&order=created_at.desc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as ReservationRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar as reservas.");
+  return payload as ReservationRecord[];
+}
+
+export async function listRoomGroups(departureId: string) {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/room_groups?departure_id=eq.${encodeURIComponent(departureId)}&select=id,departure_id,label,room_type,notes,room_group_members(reservation_id)&order=created_at.asc`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as RoomGroupRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os quartos.");
+  return payload as RoomGroupRecord[];
+}
+
+export async function createRoomGroup(input: Pick<RoomGroupRecord, "departure_id" | "label" | "room_type">) {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/room_groups"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
+  const payload = await response.json() as RoomGroupRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível criar o quarto.");
+  return payload[0] as RoomGroupRecord;
+}
+
+export async function assignReservationToRoom(reservationId: string, roomGroupId: string) {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const headers = { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
+  const remove = await fetch(endpoint(`/rest/v1/room_group_members?reservation_id=eq.${encodeURIComponent(reservationId)}`), { method: "DELETE", headers });
+  if (!remove.ok) throw new Error("Não foi possível atualizar a alocação anterior.");
+  const response = await fetch(endpoint("/rest/v1/room_group_members"), { method: "POST", headers, body: JSON.stringify({ reservation_id: reservationId, room_group_id: roomGroupId }) });
+  if (!response.ok) { const payload = await response.json() as { message?: string }; throw new Error(payload.message ?? "Não foi possível alocar o viajante."); }
 }
