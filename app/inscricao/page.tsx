@@ -31,7 +31,6 @@ export default function InscricaoPage() {
         <p>10 A 17 DE MARÇO DE 2027 · MENDOZA, ARGENTINA</p>
         <h1>Trekking, altitude e vinhos nos Andes.</h1>
         <span>Andes Essencial: oito dias de montanha, cultura e gastronomia.</span>
-        <div className="booking-highlights"><span>7 diárias com café da manhã</span><span>Aconcágua e Cordón del Plata</span><span>2 experiências harmonizadas</span></div>
       </section>
       <form onSubmit={submit} className="booking-layout">
         <section className="booking-card">
@@ -46,7 +45,7 @@ export default function InscricaoPage() {
           </fieldset>
           <fieldset><legend>Forma de pagamento</legend>
             <button type="button" className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>30% de entrada e saldo em Pix, com último pagamento em janeiro de 2027</small><b>30% agora</b></button>
-            <button type="button" className={payment === "avista" ? "selected" : ""} onClick={() => setPayment("avista")}><strong>À vista</strong><small>5% de desconto sobre o valor do pacote</small><b>{formatUsd(packagePrice * 0.95)}</b></button>
+            <button type="button" className={payment === "avista" ? "selected" : ""} onClick={() => setPayment("avista")}><strong>Pagamento à vista</strong><small>Desconto de 5% sobre o valor do pacote</small><b>{formatUsd(packagePrice * 0.95)}</b></button>
           </fieldset>
           {payment === "pix" && <fieldset><legend>Planeje o Pix</legend>
             <label>Data desejada para a entrada de 30%<input type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} required /></label>
