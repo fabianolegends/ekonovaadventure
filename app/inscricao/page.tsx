@@ -16,8 +16,7 @@ export default function InscricaoPage() {
   const [done, setDone] = useState(false);
   const [completeForm, setCompleteForm] = useState(false);
   const [finalized, setFinalized] = useState(false);
-  const [emailStatus, setEmailStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [registeredEmail, setRegisteredEmail] = useState("");
+  const [saveError, setSaveError] = useState("");
 
   const packagePrice = DOUBLE_PRICE + (room === "single" ? SINGLE_SUPPLEMENT : 0);
   const cashDiscount = payment === "avista" ? packagePrice * 0.05 : 0;
@@ -35,9 +34,7 @@ export default function InscricaoPage() {
     }
     const data = new FormData(event.currentTarget);
     const email = String(data.get("email") || "");
-    setRegisteredEmail(email);
-    setFinalized(true);
-    setEmailStatus("sending");
+    setSaveError("");
     try {
       const response = await fetch("/api/inscricao", {
         method: "POST",
@@ -55,15 +52,15 @@ export default function InscricaoPage() {
           profile: Object.fromEntries(data.entries()) as Record<string, string>,
         }),
       });
-      const result = await response.json().catch(() => null);
-      setEmailStatus(response.ok && result?.emailSent ? "sent" : "error");
+      if (!response.ok) throw new Error();
+      setFinalized(true);
     } catch {
-      setEmailStatus("error");
+      setSaveError("Não foi possível concluir o cadastro agora. Tente novamente.");
     }
   };
 
   if (finalized) {
-    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Bem-vindo ao Andes Essencial.</h1><p>A equipe Ekonova enviará o contrato para o seu e-mail.</p>{emailStatus === "sending" && <p className="welcome-muted">Preparando o resumo da sua inscrição...</p>}{emailStatus === "sent" && <p className="welcome-success">O resumo da sua reserva foi enviado para {registeredEmail}.</p>}{emailStatus === "error" && <p className="welcome-muted">Seu cadastro foi concluído. O resumo será enviado pela equipe Ekonova após a confirmação do e-mail.</p>}<a href="/">Voltar para a Ekonova Adventure</a></section></main>;
+    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Cadastro preenchido com sucesso.</h1><p>Bem-vindo ao Andes Essencial. A equipe Ekonova entrará em contato com os próximos passos.</p><a href="/">Voltar para a Ekonova Adventure</a></section></main>;
   }
 
   return (
@@ -118,6 +115,7 @@ export default function InscricaoPage() {
               <label>Telefone do plano de saúde / seguro<input name="healthPhone" required placeholder="Telefone de atendimento" /></label>
             </fieldset>
             <button className="booking-submit">Finalizar cadastro do viajante</button>
+            {saveError && <p className="booking-success">{saveError}</p>}
           </section>}
         </section>
         <aside className="booking-summary">
