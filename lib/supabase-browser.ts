@@ -65,3 +65,11 @@ export async function listClients() {
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os clientes.");
   return payload as ClientRecord[];
 }
+
+export async function createClient(input: { full_name: string; email?: string; phone?: string; city?: string }) {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/clients"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
+  const payload = await response.json() as ClientRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível cadastrar o cliente.");
+  return payload[0] as ClientRecord;
+}
