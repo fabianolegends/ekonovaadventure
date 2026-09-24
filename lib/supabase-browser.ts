@@ -113,6 +113,16 @@ export async function createClient(input: Omit<ClientRecord, "id" | "created_at"
   return payload[0] as ClientRecord;
 }
 
+export async function deleteReservation(reservationId: string) {
+  const session = await getValidSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/reservations?id=eq.${encodeURIComponent(reservationId)}`), {
+    method: "DELETE",
+    headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, Prefer: "return=minimal" },
+  });
+  if (!response.ok) throw new Error("Não foi possível excluir a inscrição.");
+}
+
 export async function listPayments() {
   const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(departure_id,status,clients(id,full_name),departures(currency,trips(title)))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
