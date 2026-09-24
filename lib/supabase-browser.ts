@@ -24,6 +24,40 @@ export function getSession(): Session | null {
   try { return JSON.parse(window.localStorage.getItem(storageKey) ?? "null") as Session | null; } catch { return null; }
 }
 
+async function getValidSession(): Promise<Session | null> {
+  const current = getSession();
+  if (!current) return null;
+
+  try {
+    const encodedPayload = current.access_token.split(".")[1];
+    const payload = JSON.parse(atob(encodedPayload.replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
+    // Renova com antecedência para que a gestão não fique vazia quando a aba
+    // permanece aberta por algum tempo.
+    if (!payload.exp || payload.exp * 1000 > Date.now() + 60_000) return current;
+  } catch {
+    return current;
+  }
+
+  const response = await fetch(endpoint("/auth/v1/token?grant_type=refresh_token"), {
+    method: "POST",
+    headers: { apikey: key!, "Content-Type": "application/json" },
+    body: JSON.stringify({ refresh_token: current.refresh_token }),
+  });
+  const refreshed = await response.json() as Partial<Session> & { error_description?: string; msg?: string };
+  if (!response.ok || !refreshed.access_token || !refreshed.refresh_token) {
+    signOut();
+    throw new Error(refreshed.error_description ?? refreshed.msg ?? "Sua sessão expirou. Entre novamente.");
+  }
+
+  const session: Session = {
+    ...current,
+    ...refreshed,
+    user: refreshed.user ?? current.user,
+  };
+  window.localStorage.setItem(storageKey, JSON.stringify(session));
+  return session;
+}
+
 export function signOut() {
   if (typeof window !== "undefined") window.localStorage.removeItem(storageKey);
 }
@@ -61,7 +95,7 @@ export async function updatePassword(accessToken: string, password: string) {
 }
 
 export async function listClients() {
-  const session = getSession();
+  const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/clients?select=*&order=created_at.desc"), {
     headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` },
@@ -72,7 +106,7 @@ export async function listClients() {
 }
 
 export async function createClient(input: Omit<ClientRecord, "id" | "created_at">) {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/clients"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
   const payload = await response.json() as ClientRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível cadastrar o cliente.");
@@ -80,7 +114,7 @@ export async function createClient(input: Omit<ClientRecord, "id" | "created_at"
 }
 
 export async function listPayments() {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(departure_id,status,clients(id,full_name),departures(currency,trips(title)))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as PaymentRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os pagamentos.");
@@ -88,7 +122,7 @@ export async function listPayments() {
 }
 
 export async function markPaymentAsPaid(paymentId: string) {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint(`/rest/v1/payments?id=eq.${encodeURIComponent(paymentId)}`), { method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ status: "pago", paid_on: new Date().toISOString().slice(0, 10) }) });
   const payload = await response.json() as PaymentRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível confirmar o pagamento.");
@@ -96,7 +130,7 @@ export async function markPaymentAsPaid(paymentId: string) {
 }
 
 export async function listReservations() {
-  const session = getSession();
+  const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/reservations?select=id,departure_id,room_type,status,payment_plan,created_at,clients(id,full_name,email,phone,city,state,cpf,rg,passport_number,emergency_contact_name,emergency_contact_phone,health_plan,health_plan_phone)&order=created_at.desc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as ReservationRecord[] & { message?: string };
@@ -105,7 +139,7 @@ export async function listReservations() {
 }
 
 export async function listDepartures() {
-  const session = getSession();
+  const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const fields = "id,starts_on,ends_on,capacity,price_cents,status,notes,single_supplement_cents,max_pix_installments,booking_enabled,currency,cash_discount_percent,pix_final_due_on,card_max_installments,public_registration_enabled,trips(title,slug,category,destination)";
   const response = await fetch(endpoint(`/rest/v1/departures?select=${encodeURIComponent(fields)}&order=starts_on.asc`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
@@ -115,7 +149,7 @@ export async function listDepartures() {
 }
 
 export async function listRoomGroups(departureId: string) {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint(`/rest/v1/room_groups?departure_id=eq.${encodeURIComponent(departureId)}&select=id,departure_id,label,room_type,notes,room_group_members(reservation_id)&order=created_at.asc`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as RoomGroupRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os quartos.");
@@ -123,7 +157,7 @@ export async function listRoomGroups(departureId: string) {
 }
 
 export async function createRoomGroup(input: Pick<RoomGroupRecord, "departure_id" | "label" | "room_type">) {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/room_groups"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
   const payload = await response.json() as RoomGroupRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível criar o quarto.");
@@ -131,7 +165,7 @@ export async function createRoomGroup(input: Pick<RoomGroupRecord, "departure_id
 }
 
 export async function assignReservationToRoom(reservationId: string, roomGroupId: string) {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const headers = { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
   const remove = await fetch(endpoint(`/rest/v1/room_group_members?reservation_id=eq.${encodeURIComponent(reservationId)}`), { method: "DELETE", headers });
   if (!remove.ok) throw new Error("Não foi possível atualizar a alocação anterior.");
@@ -140,7 +174,7 @@ export async function assignReservationToRoom(reservationId: string, roomGroupId
 }
 
 export async function listContactLogs() {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/client_contact_logs?select=id,client_id,channel,template_name,message,created_at,clients(full_name)&order=created_at.desc&limit=8"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as ContactLogRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar o histórico de contatos.");
@@ -148,7 +182,7 @@ export async function listContactLogs() {
 }
 
 export async function createContactLog(input: Pick<ContactLogRecord, "client_id" | "channel" | "template_name" | "message">) {
-  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/client_contact_logs"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
   const payload = await response.json() as ContactLogRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível registrar o contato.");
