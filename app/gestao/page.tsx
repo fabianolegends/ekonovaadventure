@@ -98,7 +98,9 @@ export default function ManagementPage() {
 
   async function removeParticipant(reservation: ReservationRecord) {
     const name = reservation.clients?.full_name ?? "este viajante";
-    const confirmed = window.confirm(`Excluir a inscrição de ${name} desta saída? Os pagamentos e a alocação de quarto vinculados a esta inscrição também serão removidos.`);
+    const proceed = window.confirm(`Você está prestes a excluir a inscrição de ${name} desta saída. Os pagamentos e a alocação de quarto vinculados também serão removidos. Deseja continuar?`);
+    if (!proceed) return;
+    const confirmed = window.confirm(`Confirmação final: excluir definitivamente a inscrição de ${name}? Esta ação não poderá ser desfeita.`);
     if (!confirmed) return;
     try {
       await deleteReservation(reservation.id);
@@ -162,13 +164,13 @@ export default function ManagementPage() {
                   <div className="panel-heading"><h2>Inscrições recebidas <small>({selectedClients.length} de {selectedDeparture.capacity} vagas)</small></h2>{selectedDeparture.public_registration_enabled && <a className="panel-link" href={registrationUrl} target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a>}</div>
                   {selectedClients.length === 0 ? <div className="empty-records"><strong>Nenhuma inscrição recebida ainda.</strong><p>{selectedDeparture.public_registration_enabled ? "Compartilhe o link de inscrição para começar a formar o grupo." : "Esta saída está em preparação. O link será habilitado junto à página pública do roteiro."}</p></div> : <div className="participant-table" role="table">
                     <div className="participant-head" role="row"><span>Pessoa</span><span>Documentos</span><span>Pagamento</span><span>Preparação</span></div>
-                    {selectedClients.map((client) => { const clientPayments = selectedPayments.filter((item) => item.reservations?.clients?.id === client.id); const reservation = selectedReservations.find((item) => item.clients?.id === client.id); const paid = clientPayments.every((item) => item.status === "pago") && clientPayments.length > 0; return <div className="participant-row" role="row" key={client.id}>
-                      <div className="person"><span className="client-initials">{client.full_name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><p><strong>{client.full_name}</strong><small>{client.city ?? "Cidade não informada"}</small></p></div>
+                    {selectedClients.map((client) => { const clientPayments = selectedPayments.filter((item) => item.reservations?.clients?.id === client.id); const reservation = selectedReservations.find((item) => item.clients?.id === client.id); const paid = clientPayments.every((item) => item.status === "pago") && clientPayments.length > 0; return <article className="participant-row" role="row" key={client.id}>
+                      <div className="participant-row-main"><div className="person"><span className="client-initials">{client.full_name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><p><strong>{client.full_name}</strong><small>{client.city ?? "Cidade não informada"}</small></p></div>
                       <div><Status tone={client.passport_number ? "ok" : "warn"}>{client.passport_number ? "● Informado" : "● Pendente"}</Status><small>{client.passport_number ? "Passaporte cadastrado" : "Aguardando documentos"}</small></div>
                       <div><Status tone={paid ? "ok" : "warn"}>{paid ? "● Pago" : "● Em aberto"}</Status><small>{clientPayments.length ? `${clientPayments.length} lançamento(s)` : "Sem lançamentos"}</small></div>
-                      <div><Status tone={client.emergency_contact_name && client.health_plan ? "ok" : "warn"}>{client.emergency_contact_name && client.health_plan ? "● Completa" : "● Em andamento"}</Status><small>{client.emergency_contact_name && client.health_plan ? "Ficha operacional pronta" : "Completar ficha"}</small></div>
-                      {reservation && <button className="more-button" aria-label={`Excluir inscrição de ${client.full_name}`} onClick={() => removeParticipant(reservation)}>Excluir</button>}
-                    </div>; })}
+                      <div><Status tone={client.emergency_contact_name && client.health_plan ? "ok" : "warn"}>{client.emergency_contact_name && client.health_plan ? "● Completa" : "● Em andamento"}</Status><small>{client.emergency_contact_name && client.health_plan ? "Ficha operacional pronta" : "Completar ficha"}</small></div></div>
+                      {reservation && <div className="participant-row-actions"><details><summary>Opções da inscrição</summary><button className="destructive-link" onClick={() => removeParticipant(reservation)}>Excluir inscrição</button></details></div>}
+                    </article>; })}
                   </div>}
                 </section>
 
