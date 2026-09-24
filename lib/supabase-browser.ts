@@ -113,6 +113,14 @@ export async function createClient(input: Omit<ClientRecord, "id" | "created_at"
   return payload[0] as ClientRecord;
 }
 
+export async function updateClient(clientId: string, input: Omit<ClientRecord, "id" | "created_at">) {
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/clients?id=eq.${encodeURIComponent(clientId)}`), { method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
+  const payload = await response.json() as ClientRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível atualizar o cadastro.");
+  return payload[0] as ClientRecord;
+}
+
 export async function deleteReservation(reservationId: string) {
   const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
