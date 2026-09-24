@@ -7,7 +7,7 @@ export type ReservationRecord = { id: string; departure_id: string; room_type: "
 export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
 export type ContactLogRecord = { id: string; client_id: string; channel: string; template_name: string; message: string; created_at: string; clients: { full_name: string } | null };
 export type DepartureCostRecord = { id: string; departure_id: string; category: string; description: string; supplier: string | null; cost_basis: "por_viajante" | "grupo"; planned_quantity: number; planned_unit_cents: number; actual_quantity: number | null; actual_unit_cents: number | null; currency: "USD" | "BRL"; notes: string | null; created_at: string };
-export type DepartureRecord = { id: string; starts_on: string; ends_on: string; capacity: number; price_cents: number; status: string; notes: string | null; single_supplement_cents: number; max_pix_installments: number; booking_enabled: boolean; currency: "USD" | "BRL"; cash_discount_percent: number; pix_final_due_on: string | null; card_max_installments: number | null; public_registration_enabled: boolean; cost_reporting_currency: "USD" | "BRL"; cost_exchange_rate: number; target_margin_percent: number; trips: { title: string; slug: string; category: string; destination: string } | null };
+export type DepartureRecord = { id: string; starts_on: string; ends_on: string; capacity: number; price_cents: number; status: string; notes: string | null; single_supplement_cents: number; max_pix_installments: number; booking_enabled: boolean; currency: "USD" | "BRL"; cash_discount_percent: number; pix_final_due_on: string | null; card_max_installments: number | null; public_registration_enabled: boolean; cost_reporting_currency: "USD" | "BRL"; cost_exchange_rate: number; target_margin_percent: number; target_profit_cents: number; trips: { title: string; slug: string; category: string; destination: string } | null };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -192,7 +192,7 @@ export async function listReservations() {
 export async function listDepartures() {
   const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  const fields = "id,starts_on,ends_on,capacity,price_cents,status,notes,single_supplement_cents,max_pix_installments,booking_enabled,currency,cash_discount_percent,pix_final_due_on,card_max_installments,public_registration_enabled,cost_reporting_currency,cost_exchange_rate,target_margin_percent,trips(title,slug,category,destination)";
+  const fields = "id,starts_on,ends_on,capacity,price_cents,status,notes,single_supplement_cents,max_pix_installments,booking_enabled,currency,cash_discount_percent,pix_final_due_on,card_max_installments,public_registration_enabled,cost_reporting_currency,cost_exchange_rate,target_margin_percent,target_profit_cents,trips(title,slug,category,destination)";
   const response = await fetch(endpoint(`/rest/v1/departures?select=${encodeURIComponent(fields)}&order=starts_on.asc`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as DepartureRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar as saídas.");
@@ -256,7 +256,7 @@ export async function updateDepartureCostActual(costId: string, input: Pick<Depa
   return payload[0] as DepartureCostRecord;
 }
 
-export async function updateDepartureCostSettings(departureId: string, input: Pick<DepartureRecord, "cost_reporting_currency" | "cost_exchange_rate" | "target_margin_percent">) {
+export async function updateDepartureCostSettings(departureId: string, input: Pick<DepartureRecord, "cost_reporting_currency" | "cost_exchange_rate" | "target_margin_percent" | "target_profit_cents">) {
   const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint(`/rest/v1/departures?id=eq.${encodeURIComponent(departureId)}`), { method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
   const payload = await response.json() as DepartureRecord[] & { message?: string };
