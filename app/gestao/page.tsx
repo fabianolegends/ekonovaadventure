@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { assignReservationToRoom, createClient, createRoomGroup, getSession, listClients, listPayments, listReservations, listRoomGroups, signOut, supabaseConfigured, type ClientRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
+import { assignReservationToRoom, createClient, createContactLog, createRoomGroup, getSession, listClients, listContactLogs, listPayments, listReservations, listRoomGroups, signOut, supabaseConfigured, type ClientRecord, type ContactLogRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
@@ -54,6 +54,7 @@ export default function ManagementPage() {
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [reservations, setReservations] = useState<ReservationRecord[]>([]);
   const [roomGroups, setRoomGroups] = useState<RoomGroupRecord[]>([]);
+  const [contactLogs, setContactLogs] = useState<ContactLogRecord[]>([]);
 
   useEffect(() => {
     if (!supabaseConfigured) { setCheckingAccess(false); return; }
@@ -64,13 +65,14 @@ export default function ManagementPage() {
   }, []);
 
   useEffect(() => {
-    if (!(["Saídas", "Clientes", "Documentos", "Relatórios"].includes(activeModule)) || !supabaseConfigured) return;
+    if (!(["Saídas", "Clientes", "Documentos", "Comunicação", "Relatórios"].includes(activeModule)) || !supabaseConfigured) return;
     setClientsLoading(true);
     listClients().then(setClients).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os clientes.")).finally(() => setClientsLoading(false));
   }, [activeModule]);
   useEffect(() => { if (["Saídas", "Financeiro", "Relatórios"].includes(activeModule) && supabaseConfigured) listPayments().then(setPayments).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar pagamentos.")); }, [activeModule]);
   useEffect(() => { if (activeModule === "Saídas" && supabaseConfigured) listReservations().then(setReservations).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar as reservas.")); }, [activeModule]);
   useEffect(() => { const departureId = reservations[0]?.departure_id; if (activeModule === "Saídas" && departureId) listRoomGroups(departureId).then(setRoomGroups).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os quartos.")); }, [activeModule, reservations]);
+  useEffect(() => { if (activeModule === "Comunicação" && supabaseConfigured) listContactLogs().then(setContactLogs).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar o histórico de contatos.")); }, [activeModule]);
 
   const totalPlanned = payments.reduce((sum, item) => sum + item.amount_cents, 0);
   const totalReceived = payments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
@@ -107,7 +109,7 @@ export default function ManagementPage() {
         </header>
 
         <div className="management-page">
-          {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} /> : activeModule === "Documentos" ? <DocumentsModule clients={clients} loading={clientsLoading} /> : activeModule === "Financeiro" ? <FinanceModule payments={payments} onAction={showNotice} /> : activeModule === "Relatórios" ? <ReportsModule clients={clients} payments={payments} /> : activeModule === "Comunicação" ? <CommunicationModule onAction={showNotice} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
+          {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} /> : activeModule === "Documentos" ? <DocumentsModule clients={clients} loading={clientsLoading} /> : activeModule === "Financeiro" ? <FinanceModule payments={payments} onAction={showNotice} /> : activeModule === "Relatórios" ? <ReportsModule clients={clients} payments={payments} /> : activeModule === "Comunicação" ? <CommunicationModule clients={clients} logs={contactLogs} onAction={showNotice} onLogged={async () => setContactLogs(await listContactLogs())} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
           <button className="back-link" onClick={() => window.history.back()}>← Voltar para saídas</button>
           <section className="management-title-row">
             <div>
@@ -204,11 +206,26 @@ function DocumentsModule({ clients, loading }: { clients: ClientRecord[]; loadin
   return <section className="module-page"><p className="module-eyebrow">Conferência operacional</p><h1>Documentos e saúde</h1><p className="module-summary">Confira as informações essenciais de cada viajante antes do embarque. Os dados vêm diretamente da ficha de inscrição.</p><div className="module-grid report-grid"><article><span>Fichas completas</span><strong>{complete}</strong><small>Documentos e segurança conferidos</small></article><article><span>Com pendências</span><strong>{pending}</strong><small>Viajantes que precisam de acompanhamento</small></article><article><span>Cadastros recebidos</span><strong>{clients.length}</strong><small>Inscrições reais do Andes Essencial</small></article></div><section className="module-workspace"><div><h2>Conferência por viajante</h2><p>{loading ? "Carregando fichas…" : "Use o filtro para priorizar quem ainda precisa complementar dados."}</p></div><div className="rooming-filter" aria-label="Filtrar documentos"><button className={filter === "all" ? "selected" : ""} onClick={() => setFilter("all")}>Todos</button><button className={filter === "pending" ? "selected" : ""} onClick={() => setFilter("pending")}>Pendentes</button><button className={filter === "complete" ? "selected" : ""} onClick={() => setFilter("complete")}>Completos</button></div></section>{visible.length === 0 ? <section className="empty-section"><h2>{clients.length ? "Nenhuma ficha neste filtro" : "Nenhuma ficha recebida ainda"}</h2><p>{clients.length ? "Altere o filtro para visualizar os demais viajantes." : "Assim que um viajante concluir a inscrição, os documentos aparecerão aqui para conferência."}</p></section> : <div className="document-list">{visible.map((client) => <article key={client.id}><header><div><strong>{client.full_name}</strong><small>{client.email || "E-mail não informado"} · {client.phone || "Telefone não informado"}</small></div><b>{readiness(client)}/4 itens</b></header><div className="document-statuses"><div>{indicator(client.cpf || client.rg, "Identidade informada", "CPF ou RG pendente")}<small>{[client.cpf && "CPF", client.rg && "RG"].filter(Boolean).join(" · ") || ""}</small></div><div>{indicator(client.passport_number, "Passaporte informado", "Passaporte pendente")}<small>{client.passport_number || ""}</small></div><div>{indicator(client.emergency_contact_name && client.emergency_contact_phone, "Contato de segurança", "Contato de segurança pendente")}<small>{client.emergency_contact_name || ""}</small></div><div>{indicator(client.health_plan && client.health_plan_phone, "Saúde informada", "Plano ou seguro pendente")}<small>{client.health_plan || ""}</small></div></div></article>)}</div>}</section>;
 }
 
-function CommunicationModule({ onAction }: { onAction: (message: string) => void }) {
-  const [selected, setSelected] = useState("Cobrança de parcela");
-  const templates: Record<string, string> = { "Cobrança de parcela": "Olá, {nome}! Tudo bem? Passando para lembrar que a próxima parcela da sua viagem vence em {data}. Posso ajudar com algo?", "Documentos pendentes": "Olá, {nome}! Para concluirmos sua preparação, precisamos receber {documento}. Você consegue nos enviar por aqui?", "Briefing da viagem": "Olá, {nome}! Nosso briefing da viagem acontece em {data}, às {hora}. Vamos compartilhar os detalhes finais e tirar dúvidas." };
-  const openWhatsApp = () => { window.open(`https://wa.me/?text=${encodeURIComponent(templates[selected])}`, "_blank", "noopener,noreferrer"); onAction("Roteiro aberto no WhatsApp. Registre o contato na ficha do cliente após o envio."); };
-  return <section className="module-page"><p className="module-eyebrow">WhatsApp e relacionamento</p><h1>Conversas que aproximam</h1><p className="module-summary">Escolha um roteiro, personalize os campos e mantenha cada contato coerente com a experiência Ekonova.</p><section className="communication-layout"><div className="template-list">{Object.keys(templates).map((name) => <button key={name} className={selected === name ? "selected" : ""} onClick={() => setSelected(name)}><strong>{name}</strong><small>WhatsApp · saída</small></button>)}</div><article className="message-preview"><span>Prévia da mensagem</span><p>{templates[selected]}</p><small>Os campos entre chaves são preenchidos com os dados do cliente.</small><button onClick={openWhatsApp}><MessageCircle aria-hidden="true" />Abrir no WhatsApp</button></article></section><section className="module-workspace"><div><h2>Histórico de contatos</h2><p>O próximo registro enviado ficará salvo no histórico do cliente, junto com reservas e pagamentos.</p></div><button onClick={() => onAction("Selecione um cliente para registrar um contato manual.")}><Plus aria-hidden="true" />Registrar contato</button></section></section>;
+function CommunicationModule({ clients, logs, onAction, onLogged }: { clients: ClientRecord[]; logs: ContactLogRecord[]; onAction: (message: string) => void; onLogged: () => Promise<void> }) {
+  const templates: Record<string, string> = { "Confirmação da inscrição": "Olá, {nome}! Recebemos sua inscrição para o Andes Essencial. A equipe Ekonova entrará em contato com os próximos passos.", "Documentos pendentes": "Olá, {nome}! Para concluirmos sua preparação para o Andes Essencial, precisamos complementar seus documentos e dados de segurança. Você consegue nos enviar por aqui?", "Pagamento e parcelas": "Olá, {nome}! Tudo bem? Passando para acompanharmos o planejamento do pagamento da sua viagem. Posso ajudar com alguma dúvida?", "Briefing da viagem": "Olá, {nome}! Em breve enviaremos os detalhes do briefing do Andes Essencial. Será um momento para tirar dúvidas e preparar a viagem." };
+  const [selected, setSelected] = useState("Confirmação da inscrição");
+  const [clientId, setClientId] = useState("");
+  const [saving, setSaving] = useState(false);
+  const client = clients.find((item) => item.id === clientId);
+  const message = templates[selected].replaceAll("{nome}", client?.full_name || "[nome]");
+  async function openWhatsApp() {
+    if (!client) { onAction("Selecione um viajante antes de abrir a mensagem."); return; }
+    if (!client.phone) { onAction("Este viajante não possui telefone cadastrado."); return; }
+    setSaving(true);
+    try {
+      await createContactLog({ client_id: client.id, channel: "whatsapp", template_name: selected, message });
+      await onLogged();
+      const phone = client.phone.replace(/\D/g, "");
+      window.open(`https://wa.me/${phone.startsWith("55") ? phone : `55${phone}`}?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+      onAction("Contato registrado e mensagem preparada no WhatsApp.");
+    } catch (error) { onAction(error instanceof Error ? error.message : "Não foi possível registrar o contato."); } finally { setSaving(false); }
+  }
+  return <section className="module-page"><p className="module-eyebrow">WhatsApp e relacionamento</p><h1>Conversas que aproximam</h1><p className="module-summary">Escolha o viajante e o roteiro. Ao abrir o WhatsApp, o contato fica registrado automaticamente na gestão.</p><section className="communication-layout"><div className="template-list">{Object.keys(templates).map((name) => <button key={name} className={selected === name ? "selected" : ""} onClick={() => setSelected(name)}><strong>{name}</strong><small>WhatsApp · Andes Essencial</small></button>)}</div><article className="message-preview"><span>Mensagem para o viajante</span><label className="communication-client">Viajante<select value={clientId} onChange={(event) => setClientId(event.target.value)}><option value="">Selecione um viajante</option>{clients.map((item) => <option key={item.id} value={item.id}>{item.full_name}</option>)}</select></label><p>{message}</p><small>{clients.length ? "A mensagem usa o nome do viajante escolhido." : "As opções de contato aparecerão quando chegarem inscrições reais."}</small><button disabled={saving || !clients.length} onClick={openWhatsApp}><MessageCircle aria-hidden="true" />{saving ? "Registrando…" : "Abrir no WhatsApp e registrar"}</button></article></section><section className="module-workspace"><div><h2>Histórico de contatos</h2><p>{logs.length ? "Últimos contatos registrados pela equipe." : "Nenhum contato registrado ainda."}</p></div></section>{logs.length > 0 && <div className="clients-list contact-list">{logs.map((log) => <article key={log.id}><span>W</span><div><strong>{log.clients?.full_name ?? "Viajante"} · {log.template_name}</strong><small>{new Date(log.created_at).toLocaleString("pt-BR")}</small></div></article>)}</div>}</section>;
 }
 
 function ReportsModule({ clients, payments }: { clients: ClientRecord[]; payments: PaymentRecord[] }) {
