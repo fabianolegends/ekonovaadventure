@@ -20,7 +20,10 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import financeStyles from "./finance.module.css";
 import { assignReservationToRoom, createClient, createContactLog, createRoomGroup, getSession, listClients, listContactLogs, listDepartures, listPayments, listReservations, listRoomGroups, markPaymentAsPaid, signOut, supabaseConfigured, type ClientRecord, type ContactLogRecord, type DepartureRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
+
+void financeStyles;
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
