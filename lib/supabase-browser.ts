@@ -2,7 +2,7 @@
 
 type Session = { access_token: string; refresh_token: string; user: { id: string; email?: string } };
 export type ClientRecord = { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; cpf: string | null; rg: string | null; passport_number: string | null; street: string | null; neighborhood: string | null; postal_code: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null; created_at: string };
-export type PaymentRecord = { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { departure_id: string; status: string; clients: { id: string; full_name: string } | null; departures: { currency: "USD" | "BRL"; trips: { title: string } | null } | null } | null };
+export type PaymentRecord = { id: string; reservation_id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { departure_id: string; status: string; clients: { id: string; full_name: string } | null; departures: { currency: "USD" | "BRL"; trips: { title: string } | null } | null } | null };
 export type ReservationRecord = { id: string; departure_id: string; room_type: "duplo" | "single" | null; status: string; payment_plan: string | null; created_at: string; clients: { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; state: string | null; cpf: string | null; rg: string | null; passport_number: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null } | null };
 export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
 export type ContactLogRecord = { id: string; client_id: string; channel: string; template_name: string; message: string; created_at: string; clients: { full_name: string } | null };
@@ -143,7 +143,7 @@ export async function deleteClientWithReservations(clientId: string) {
 
 export async function listPayments() {
   const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(departure_id,status,clients(id,full_name),departures(currency,trips(title)))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const response = await fetch(endpoint("/rest/v1/payments?select=id,reservation_id,amount_cents,due_on,paid_on,status,reference,reservations(departure_id,status,clients(id,full_name),departures(currency,trips(title)))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as PaymentRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os pagamentos.");
   return payload as PaymentRecord[];
@@ -155,6 +155,28 @@ export async function markPaymentAsPaid(paymentId: string) {
   const payload = await response.json() as PaymentRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível confirmar o pagamento.");
   return payload[0] as PaymentRecord;
+}
+
+export async function replacePendingPaymentPlan(input: { reservationId: string; totalCents: number; entranceCents: number; installments: number; firstDueOn: string; currency: "USD" | "BRL" }) {
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const { reservationId, totalCents, entranceCents, installments, firstDueOn, currency } = input;
+  if (!reservationId || !firstDueOn || !Number.isInteger(totalCents) || !Number.isInteger(entranceCents) || !Number.isInteger(installments) || totalCents <= 0 || entranceCents < 0 || entranceCents > totalCents || installments < 0) throw new Error("Revise os dados da condição especial.");
+  const remaining = totalCents - entranceCents;
+  if ((remaining > 0 && installments === 0) || (remaining === 0 && installments > 0)) throw new Error("Defina parcelas compatíveis com o saldo restante.");
+  const headers = { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
+  const currentResponse = await fetch(endpoint(`/rest/v1/payments?reservation_id=eq.${encodeURIComponent(reservationId)}&select=id,status`), { headers });
+  const current = await currentResponse.json() as { id: string; status: string }[] & { message?: string };
+  if (!currentResponse.ok) throw new Error(current.message ?? "Não foi possível validar os pagamentos.");
+  if (current.some((payment) => payment.status === "pago")) throw new Error("Não é possível alterar a condição após um pagamento confirmado.");
+  const deleteResponse = await fetch(endpoint(`/rest/v1/payments?reservation_id=eq.${encodeURIComponent(reservationId)}&status=eq.pendente`), { method: "DELETE", headers });
+  if (!deleteResponse.ok) throw new Error("Não foi possível atualizar as cobranças pendentes.");
+  const addMonths = (date: string, months: number) => { const item = new Date(`${date}T12:00:00`); item.setMonth(item.getMonth() + months); return item.toISOString().slice(0, 10); };
+  const rows: { reservation_id: string; amount_cents: number; due_on: string; status: string; method: string; reference: string }[] = [];
+  if (entranceCents > 0) rows.push({ reservation_id: reservationId, amount_cents: entranceCents, due_on: firstDueOn, status: "pendente", method: "pix", reference: `${currency} · condição especial · entrada` });
+  if (installments > 0) { const base = Math.floor(remaining / installments); for (let index = 0; index < installments; index += 1) rows.push({ reservation_id: reservationId, amount_cents: index === installments - 1 ? remaining - base * (installments - 1) : base, due_on: addMonths(firstDueOn, index + 1), status: "pendente", method: "pix", reference: `${currency} · condição especial · parcela ${index + 1}` }); }
+  const createResponse = await fetch(endpoint("/rest/v1/payments"), { method: "POST", headers: { ...headers, Prefer: "return=representation" }, body: JSON.stringify(rows) });
+  const created = await createResponse.json() as { message?: string };
+  if (!createResponse.ok) throw new Error(created.message ?? "Não foi possível criar a nova condição.");
 }
 
 export async function listReservations() {
