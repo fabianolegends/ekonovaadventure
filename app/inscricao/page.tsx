@@ -61,10 +61,11 @@ export default function InscricaoPage() {
           profile: Object.fromEntries(data.entries()) as Record<string, string>,
         }),
       });
-      if (!response.ok) throw new Error();
+      const result = await response.json().catch(() => null) as { error?: string } | null;
+      if (!response.ok) throw new Error(result?.error || "Não foi possível concluir o cadastro agora.");
       setFinalized(true);
-    } catch {
-      setSaveError("Não foi possível concluir o cadastro agora. Tente novamente.");
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : "Não foi possível concluir o cadastro agora. Tente novamente.");
     }
   };
 
