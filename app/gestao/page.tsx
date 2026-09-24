@@ -270,7 +270,7 @@ function ContractDocumentsModule({ departure, reservations, payments }: { depart
       .replace(`<title>Contrato - ${escape(client.full_name)}</title>`, `<title>Contrato - ${escape(departure.trips?.title)} - ${escape(client.full_name)}</title>`)
       .replace("Destino Ativo Eventos e Turismo Ltda., CNPJ 57.263.841/0001-09, doravante CONTRATADA.", "Destino Ativo Eventos e Turismo Ltda., CNPJ 57.263.841/0001-09, com sede na Rua do Albatroz, Bairro Pedra Branca, Palhoça/SC, CEP 88137-290, doravante CONTRATADA.")
       .replace("<style>@page{size:A4;margin:22mm}", "<style>@page{size:A4;margin:22mm}body{position:relative}.contract-watermark{position:fixed;top:0;left:0;width:100%;height:auto;opacity:.1;z-index:0;pointer-events:none}body>*:not(.contract-watermark){position:relative;z-index:1}@media print{.contract-watermark{display:block!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}")
-      .replace("<body>", "<body><img class=\"contract-watermark\" src=\"/destino-ativo-watermark.svg\" alt=\"\" aria-hidden=\"true\">")
+      .replace("<body>", "<body><img class=\"contract-watermark\" src=\"https://www.ekonovaadv.com.br/destino-ativo-watermark.svg\" alt=\"\" aria-hidden=\"true\">")
       .replace("margin-top:46px", "margin-top:92px")
       .replace(/Palhoça\/SC, ____ de __________________ de \d{4}\./, `Palhoça/SC, ${issuedOn()}.`);
     const popup = window.open("", "_blank"); if (!popup) return; popup.opener = null; popup.document.write(contractHtml); popup.document.close();
