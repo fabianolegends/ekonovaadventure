@@ -5,6 +5,7 @@ export type ClientRecord = { id: string; full_name: string; email: string | null
 export type PaymentRecord = { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { status: string; clients: { full_name: string } | null } | null };
 export type ReservationRecord = { id: string; departure_id: string; room_type: "duplo" | "single" | null; status: string; payment_plan: string | null; created_at: string; clients: { full_name: string; email: string | null; phone: string | null; city: string | null; state: string | null; cpf: string | null; rg: string | null; passport_number: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null } | null };
 export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
+export type ContactLogRecord = { id: string; client_id: string; channel: string; template_name: string; message: string; created_at: string; clients: { full_name: string } | null };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -117,4 +118,20 @@ export async function assignReservationToRoom(reservationId: string, roomGroupId
   if (!remove.ok) throw new Error("Não foi possível atualizar a alocação anterior.");
   const response = await fetch(endpoint("/rest/v1/room_group_members"), { method: "POST", headers, body: JSON.stringify({ reservation_id: reservationId, room_group_id: roomGroupId }) });
   if (!response.ok) { const payload = await response.json() as { message?: string }; throw new Error(payload.message ?? "Não foi possível alocar o viajante."); }
+}
+
+export async function listContactLogs() {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/client_contact_logs?select=id,client_id,channel,template_name,message,created_at,clients(full_name)&order=created_at.desc&limit=8"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as ContactLogRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar o histórico de contatos.");
+  return payload as ContactLogRecord[];
+}
+
+export async function createContactLog(input: Pick<ContactLogRecord, "client_id" | "channel" | "template_name" | "message">) {
+  const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint("/rest/v1/client_contact_logs"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
+  const payload = await response.json() as ContactLogRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível registrar o contato.");
+  return payload[0] as ContactLogRecord;
 }
