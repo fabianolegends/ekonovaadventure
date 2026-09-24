@@ -20,7 +20,7 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { assignReservationToRoom, createClient, createContactLog, createRoomGroup, getSession, listClients, listContactLogs, listPayments, listReservations, listRoomGroups, signOut, supabaseConfigured, type ClientRecord, type ContactLogRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
+import { assignReservationToRoom, createClient, createContactLog, createRoomGroup, getSession, listClients, listContactLogs, listDepartures, listPayments, listReservations, listRoomGroups, signOut, supabaseConfigured, type ClientRecord, type ContactLogRecord, type DepartureRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
@@ -53,6 +53,8 @@ export default function ManagementPage() {
   const [clientsLoading, setClientsLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
   const [reservations, setReservations] = useState<ReservationRecord[]>([]);
+  const [departures, setDepartures] = useState<DepartureRecord[]>([]);
+  const [selectedDepartureId, setSelectedDepartureId] = useState<string | null>(null);
   const [roomGroups, setRoomGroups] = useState<RoomGroupRecord[]>([]);
   const [contactLogs, setContactLogs] = useState<ContactLogRecord[]>([]);
 
@@ -71,12 +73,19 @@ export default function ManagementPage() {
   }, [activeModule]);
   useEffect(() => { if (["Saídas", "Financeiro", "Relatórios"].includes(activeModule) && supabaseConfigured) listPayments().then(setPayments).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar pagamentos.")); }, [activeModule]);
   useEffect(() => { if (activeModule === "Saídas" && supabaseConfigured) listReservations().then(setReservations).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar as reservas.")); }, [activeModule]);
-  useEffect(() => { const departureId = reservations[0]?.departure_id; if (activeModule === "Saídas" && departureId) listRoomGroups(departureId).then(setRoomGroups).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os quartos.")); }, [activeModule, reservations]);
+  useEffect(() => { if (activeModule === "Saídas" && supabaseConfigured) listDepartures().then((items) => { setDepartures(items); setSelectedDepartureId((current) => current && items.some((item) => item.id === current) ? current : items[0]?.id ?? null); }).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar as saídas.")); }, [activeModule]);
+  useEffect(() => { if (activeModule === "Saídas" && selectedDepartureId) listRoomGroups(selectedDepartureId).then(setRoomGroups).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar os quartos.")); }, [activeModule, selectedDepartureId]);
   useEffect(() => { if (activeModule === "Comunicação" && supabaseConfigured) listContactLogs().then(setContactLogs).catch((error) => showNotice(error instanceof Error ? error.message : "Não foi possível carregar o histórico de contatos.")); }, [activeModule]);
 
-  const totalPlanned = payments.reduce((sum, item) => sum + item.amount_cents, 0);
-  const totalReceived = payments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
-  const money = (value: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value / 100);
+  const selectedDeparture = departures.find((item) => item.id === selectedDepartureId) ?? null;
+  const selectedReservations = selectedDeparture ? reservations.filter((item) => item.departure_id === selectedDeparture.id) : [];
+  const selectedClientIds = new Set(selectedReservations.map((item) => item.clients?.id).filter(Boolean));
+  const selectedClients = selectedDeparture ? clients.filter((item) => selectedClientIds.has(item.id)) : [];
+  const selectedPayments = selectedDeparture ? payments.filter((item) => item.reservations?.departure_id === selectedDeparture.id) : [];
+  const totalPlanned = selectedPayments.reduce((sum, item) => sum + item.amount_cents, 0);
+  const totalReceived = selectedPayments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
+  const money = (value: number) => new Intl.NumberFormat(selectedDeparture?.currency === "BRL" ? "pt-BR" : "en-US", { style: "currency", currency: selectedDeparture?.currency ?? "USD" }).format(value / 100);
+  const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
 
   function showNotice(message: string) {
     setNotice(message);
@@ -110,14 +119,16 @@ export default function ManagementPage() {
 
         <div className="management-page">
           {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} /> : activeModule === "Documentos" ? <DocumentsModule clients={clients} loading={clientsLoading} /> : activeModule === "Financeiro" ? <FinanceModule payments={payments} onAction={showNotice} /> : activeModule === "Relatórios" ? <ReportsModule clients={clients} payments={payments} /> : activeModule === "Comunicação" ? <CommunicationModule clients={clients} logs={contactLogs} onAction={showNotice} onLogged={async () => setContactLogs(await listContactLogs())} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
+          <section className="departure-catalog" aria-label="Saídas cadastradas"><div><p className="module-eyebrow">SAÍDAS OPERACIONAIS</p><h2>Escolha uma saída para gerir</h2><p>Inscrições, reservas, pagamentos e acomodação ficam separados por roteiro.</p></div><div className="departure-cards">{departures.map((departure) => <button key={departure.id} className={selectedDeparture?.id === departure.id ? "selected" : ""} onClick={() => setSelectedDepartureId(departure.id)}><small>{departure.trips?.category ?? "Roteiro"} · {departure.currency}</small><strong>{departure.trips?.title ?? "Saída"}</strong><span>{formatDate(departure.starts_on)} · {departure.capacity} vagas</span><em>{departure.public_registration_enabled ? "Inscrições abertas" : "Em preparação"}</em></button>)}</div>{!departures.length && <div className="empty-records"><strong>Nenhuma saída cadastrada ainda.</strong><p>As saídas operacionais aparecerão aqui assim que forem criadas.</p></div>}</section>
+          {selectedDeparture && <>
           <button className="back-link" onClick={() => window.history.back()}>← Voltar para saídas</button>
           <section className="management-title-row">
             <div>
-              <div className="title-line"><h1>Andes Essencial</h1><Status tone="neutral">● Inscrições abertas</Status></div>
-              <p className="trip-subtitle">Trekking e gastronomia <b /> Mendoza, Argentina</p>
-              <div className="trip-meta"><span><CalendarDays aria-hidden="true" />10 – 17 mar 2027</span><span><MapPinned aria-hidden="true" />Cordilheira dos Andes</span><span><Users aria-hidden="true" />{clients.length}/12 inscrições</span></div>
+              <div className="title-line"><h1>{selectedDeparture.trips?.title ?? "Saída"}</h1><Status tone="neutral">● {selectedDeparture.public_registration_enabled ? "Inscrições abertas" : "Em preparação"}</Status></div>
+              <p className="trip-subtitle">{selectedDeparture.trips?.category ?? "Roteiro"} <b /> {selectedDeparture.trips?.destination ?? "Destino a definir"}</p>
+              <div className="trip-meta"><span><CalendarDays aria-hidden="true" />{formatDate(selectedDeparture.starts_on)} – {formatDate(selectedDeparture.ends_on)}</span><span><MapPinned aria-hidden="true" />{selectedDeparture.trips?.destination ?? "Destino"}</span><span><Users aria-hidden="true" />{selectedClients.length}/{selectedDeparture.capacity} inscrições</span></div>
             </div>
-            <div className="title-actions"><a href="/inscricao" target="_blank" rel="noreferrer">Abrir link de inscrição</a></div>
+            <div className="title-actions">{selectedDeparture.public_registration_enabled ? <a href={`/inscricao/${selectedDeparture.trips?.slug ?? ""}`} target="_blank" rel="noreferrer">Abrir link de inscrição</a> : <span>Link será liberado ao publicar a página do roteiro.</span>}</div>
           </section>
 
           <div className="management-layout">
@@ -126,12 +137,12 @@ export default function ManagementPage() {
                 {["Participantes", "Rooming list", "Roteiro", "Operações", "Financeiro", "Documentos", "Comunicação"].map((tab) => <button role="tab" aria-selected={activeTab === tab} className={activeTab === tab ? "selected" : ""} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}
               </div>
 
-              {activeTab === "Rooming list" ? <RoomingListModule reservations={reservations} groups={roomGroups} onChange={async () => { const departureId = reservations[0]?.departure_id; if (departureId) setRoomGroups(await listRoomGroups(departureId)); }} onNotice={showNotice} /> : activeTab === "Participantes" ? <>
+              {activeTab === "Rooming list" ? <RoomingListModule reservations={selectedReservations} groups={roomGroups} onChange={async () => { if (selectedDeparture) setRoomGroups(await listRoomGroups(selectedDeparture.id)); }} onNotice={showNotice} /> : activeTab === "Participantes" ? <>
                 <section className="participants-panel">
-                  <div className="panel-heading"><h2>Inscrições recebidas <small>({clients.length} de 12 vagas)</small></h2><a className="panel-link" href="/inscricao" target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a></div>
-                  {clients.length === 0 ? <div className="empty-records"><strong>Nenhuma inscrição recebida ainda.</strong><p>Compartilhe o link de inscrição do Andes Essencial para começar a formar o grupo.</p></div> : <div className="participant-table" role="table">
+                  <div className="panel-heading"><h2>Inscrições recebidas <small>({selectedClients.length} de {selectedDeparture.capacity} vagas)</small></h2>{selectedDeparture.public_registration_enabled && <a className="panel-link" href={`/inscricao/${selectedDeparture.trips?.slug ?? ""}`} target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a>}</div>
+                  {selectedClients.length === 0 ? <div className="empty-records"><strong>Nenhuma inscrição recebida ainda.</strong><p>{selectedDeparture.public_registration_enabled ? "Compartilhe o link de inscrição para começar a formar o grupo." : "Esta saída está em preparação. O link será habilitado junto à página pública do roteiro."}</p></div> : <div className="participant-table" role="table">
                     <div className="participant-head" role="row"><span>Pessoa</span><span>Documentos</span><span>Pagamento</span><span>Preparação</span></div>
-                    {clients.map((client) => { const clientPayments = payments.filter((item) => item.reservations?.clients?.full_name === client.full_name); const paid = clientPayments.every((item) => item.status === "pago") && clientPayments.length > 0; return <div className="participant-row" role="row" key={client.id}>
+                    {selectedClients.map((client) => { const clientPayments = selectedPayments.filter((item) => item.reservations?.clients?.id === client.id); const paid = clientPayments.every((item) => item.status === "pago") && clientPayments.length > 0; return <div className="participant-row" role="row" key={client.id}>
                       <div className="person"><span className="client-initials">{client.full_name.split(" ").map((part) => part[0]).slice(0, 2).join("")}</span><p><strong>{client.full_name}</strong><small>{client.city ?? "Cidade não informada"}</small></p></div>
                       <div><Status tone={client.passport_number ? "ok" : "warn"}>{client.passport_number ? "● Informado" : "● Pendente"}</Status><small>{client.passport_number ? "Passaporte cadastrado" : "Aguardando documentos"}</small></div>
                       <div><Status tone={paid ? "ok" : "warn"}>{paid ? "● Pago" : "● Em aberto"}</Status><small>{clientPayments.length ? `${clientPayments.length} lançamento(s)` : "Sem lançamentos"}</small></div>
@@ -149,13 +160,13 @@ export default function ManagementPage() {
 
             <aside className="trip-summary">
               <h2>Ritmo da saída</h2><p>Dados reais de ocupação e financeiro</p>
-              <div className="occupancy"><div className="occupancy-ring"><strong>{clients.length}/12</strong></div><div><b>Inscrições recebidas</b><strong>{clients.length} de 12 vagas</strong><small>{Math.max(12 - clients.length, 0)} vaga(s) disponível(is)</small></div></div>
+              <div className="occupancy"><div className="occupancy-ring"><strong>{selectedClients.length}/{selectedDeparture.capacity}</strong></div><div><b>Inscrições recebidas</b><strong>{selectedClients.length} de {selectedDeparture.capacity} vagas</strong><small>{Math.max(selectedDeparture.capacity - selectedClients.length, 0)} vaga(s) disponível(is)</small></div></div>
               <div className="summary-block"><span>Total previsto</span><div><strong>{money(totalPlanned)}</strong><small>Recebido: {money(totalReceived)}</small></div><i><b style={{ width: totalPlanned ? `${Math.round((totalReceived / totalPlanned) * 100)}%` : "0%" }} /></i><em>{totalPlanned ? `${Math.round((totalReceived / totalPlanned) * 100)}%` : "0%"}</em></div>
-              <div className="payments-list"><div className="section-label"><b>Próximos pagamentos</b></div>{payments.filter((item) => item.status !== "pago").slice(0, 3).map((item) => <article key={item.id}><i /><p>{item.reservations?.clients?.full_name ?? "Cliente"}</p><strong>{money(item.amount_cents)}<small>até {new Date(`${item.due_on}T12:00:00`).toLocaleDateString("pt-BR")}</small></strong></article>)}{payments.length === 0 && <p className="empty-payments">Nenhum lançamento financeiro registrado.</p>}</div>
-              <a className="charge-button" href="/inscricao" target="_blank" rel="noreferrer"><Users aria-hidden="true" />Compartilhar inscrição</a>
+              <div className="payments-list"><div className="section-label"><b>Próximos pagamentos</b></div>{selectedPayments.filter((item) => item.status !== "pago").slice(0, 3).map((item) => <article key={item.id}><i /><p>{item.reservations?.clients?.full_name ?? "Cliente"}</p><strong>{money(item.amount_cents)}<small>até {new Date(`${item.due_on}T12:00:00`).toLocaleDateString("pt-BR")}</small></strong></article>)}{selectedPayments.length === 0 && <p className="empty-payments">Nenhum lançamento financeiro registrado.</p>}</div>
+              {selectedDeparture.public_registration_enabled ? <a className="charge-button" href={`/inscricao/${selectedDeparture.trips?.slug ?? ""}`} target="_blank" rel="noreferrer"><Users aria-hidden="true" />Compartilhar inscrição</a> : <span className="disabled-link">Inscrições aguardando página pública</span>}
               <div className="trip-reminders"><h3>Próximo passo</h3><p>Envie o link de inscrição para os viajantes. A preparação será organizada conforme os cadastros reais entrarem.</p></div>
             </aside>
-          </div></>}
+          </div></>}</>}
         </div>
       </section>
       {!supabaseConfigured && <div className="management-demo-note">Modo de demonstração — conecte o Supabase para ativar acesso e dados reais.</div>}
