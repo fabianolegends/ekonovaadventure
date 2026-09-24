@@ -123,6 +123,16 @@ export async function deleteReservation(reservationId: string) {
   if (!response.ok) throw new Error("Não foi possível excluir a inscrição.");
 }
 
+export async function deleteClientWithReservations(clientId: string) {
+  const session = await getValidSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const headers = { apikey: key!, Authorization: `Bearer ${session.access_token}`, Prefer: "return=minimal" };
+  const reservations = await fetch(endpoint(`/rest/v1/reservations?client_id=eq.${encodeURIComponent(clientId)}`), { method: "DELETE", headers });
+  if (!reservations.ok) throw new Error("Não foi possível excluir as inscrições do cliente.");
+  const client = await fetch(endpoint(`/rest/v1/clients?id=eq.${encodeURIComponent(clientId)}`), { method: "DELETE", headers });
+  if (!client.ok) throw new Error("Não foi possível excluir o cadastro do cliente.");
+}
+
 export async function listPayments() {
   const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(departure_id,status,clients(id,full_name),departures(currency,trips(title)))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
