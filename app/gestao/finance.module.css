@@ -3,6 +3,38 @@
   gap: 12px;
 }
 
+:global(.operations-page) { max-width: 1180px; }
+:global(.operations-selector), :global(.operations-settings), :global(.operations-add-cost) { display:flex; align-items:end; gap:14px; margin:20px 0; padding:18px; border:1px solid #d9ddd4; border-radius:10px; background:#fffdf8; }
+:global(.operations-selector label), :global(.operations-settings label), :global(.operations-add-cost label) { display:grid; gap:6px; color:#173e31; font-size:.78rem; font-weight:800; }
+:global(.operations-selector select), :global(.operations-settings select), :global(.operations-settings input), :global(.operations-add-cost select), :global(.operations-add-cost input), :global(.operations-table input) { min-height:38px; border:1px solid #bfd0c3; border-radius:4px; background:#fffefa; padding:8px; color:#173e31; font:inherit; }
+:global(.operations-selector span) { color:#6b796f; font-size:.85rem; }
+:global(.operations-summary) { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+:global(.operations-summary article) { padding:18px; border:1px solid #d9ddd4; border-radius:10px; background:#fffdf8; }
+:global(.operations-summary span), :global(.operations-summary small) { display:block; color:#6b796f; font-size:.76rem; }
+:global(.operations-summary strong) { display:block; margin:7px 0 4px; color:#173e31; font-family:Georgia,serif; font-size:1.52rem; }
+:global(.operations-settings > div) { min-width:220px; margin-right:auto; }
+:global(.operations-settings strong), :global(.operations-settings small) { display:block; }
+:global(.operations-settings small), :global(.operations-costs header p) { margin-top:4px; color:#6b796f; font-size:.8rem; line-height:1.45; }
+:global(.operations-settings button), :global(.operations-add-cost button), :global(.operations-table form button) { min-height:38px; border:0; border-radius:4px; background:#176041; color:#fff; padding:9px 13px; font-weight:800; cursor:pointer; }
+:global(.operations-settings button:disabled), :global(.operations-add-cost button:disabled), :global(.operations-table form button:disabled) { cursor:wait; opacity:.65; }
+:global(.operations-costs) { margin-top:22px; overflow:hidden; border:1px solid #d9ddd4; border-radius:10px; background:#fffdf8; }
+:global(.operations-costs header) { padding:18px; border-bottom:1px solid #e3e6e0; }
+:global(.operations-costs h2), :global(.operations-add-cost h2) { margin:0; color:#173e31; font-family:Georgia,serif; font-size:1.45rem; }
+:global(.operations-costs header p) { margin-bottom:0; }
+:global(.operations-head), :global(.operations-table article) { display:grid; grid-template-columns:1.45fr 1fr .7fr 1.45fr; align-items:center; gap:15px; padding:14px 18px; }
+:global(.operations-head) { background:#f7f8f3; color:#3c5147; font-size:.76rem; font-weight:800; }
+:global(.operations-table article) { border-top:1px solid #e3e6e0; }
+:global(.operations-table strong), :global(.operations-table b), :global(.operations-table small) { display:block; }
+:global(.operations-table small) { margin-top:4px; color:#6b796f; font-size:.76rem; }
+:global(.operations-table form) { display:grid; grid-template-columns:70px 96px auto; gap:7px; }
+:global(.operations-table input) { min-width:0; }
+:global(.operations-add-cost) { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); }
+:global(.operations-add-cost h2) { grid-column:1/-1; margin-bottom:3px; }
+:global(.operations-add-cost button) { align-self:end; }
+
+@media (max-width: 920px) { :global(.operations-summary) { grid-template-columns:repeat(2,1fr); } :global(.operations-settings) { flex-wrap:wrap; } :global(.operations-settings > div) { width:100%; } :global(.operations-add-cost) { grid-template-columns:repeat(2,minmax(0,1fr)); } :global(.operations-head) { display:none; } :global(.operations-table article) { grid-template-columns:1fr 1fr; } }
+@media (max-width: 560px) { :global(.operations-summary), :global(.operations-add-cost), :global(.operations-table article) { grid-template-columns:1fr; } :global(.operations-selector), :global(.operations-settings) { align-items:stretch; flex-direction:column; } :global(.operations-table form) { grid-template-columns:1fr 1fr; } :global(.operations-table form button) { grid-column:1/-1; } }
+
 :global(.finance-clients > article) {
   overflow: hidden;
   border: 1px solid #d9ddd4;
