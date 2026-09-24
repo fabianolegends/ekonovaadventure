@@ -2,14 +2,21 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 import "./inscricao.css";
 
-const DOUBLE_PRICE = 1399;
-const SINGLE_SUPPLEMENT = 300;
-const formatUsd = (value: number) =>
-  new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", minimumFractionDigits: 2 }).format(value);
+const ROUTES = {
+  "andes-essencial": { title: "Andes Essencial", date: "10 a 17 de março de 2027", shortDate: "10–17 mar 2027", destination: "Mendoza, Argentina", hero: "Trekking, altitude e vinhos nos Andes.", description: "Andes Essencial: oito dias de montanha, cultura e gastronomia.", price: 1399, single: 300, currency: "USD", locale: "en-US", pix: "30% de entrada e saldo em Pix", finalDue: "", installments: 6 },
+  "trekking-caminhos-do-ouro": { title: "Trekking Caminhos do Ouro", date: "10 a 17 de junho de 2027", shortDate: "10–17 jun 2027", destination: "Ouro Preto, Tiradentes e Lavras Novas, MG", hero: "Caminhe pela história e pelas montanhas de Minas.", description: "Oito dias de trekking, cultura e natureza pelos Caminhos do Ouro.", price: 3999, single: 700, currency: "BRL", locale: "pt-BR", pix: "30% de entrada e saldo em Pix", finalDue: "", installments: 6 },
+  "biketour-caminhos-do-ouro": { title: "Biketour Caminhos do Ouro", date: "4 a 10 de junho de 2027", shortDate: "4–10 jun 2027", destination: "Ouro Preto e região, MG", hero: "Pedale por paisagens, história e cultura mineira.", description: "Sete dias de bike, natureza e experiências pelos Caminhos do Ouro.", price: 4499, single: 700, currency: "BRL", locale: "pt-BR", pix: "30% de entrada e saldo em Pix", finalDue: "", installments: 6 },
+  "trekking-atacama-essencia-2027": { title: "Trekking Atacama na sua Essência 2027", date: "16 a 24 de setembro de 2027", shortDate: "16–24 set 2027", destination: "San Pedro de Atacama, Chile", hero: "Viva o deserto do Atacama na sua essência.", description: "Nove dias de trekking, cultura andina e paisagens únicas no norte do Chile.", price: 1799, single: 450, currency: "USD", locale: "en-US", pix: "30% de entrada e saldo em Pix, com último pagamento em abril de 2027", finalDue: "abril de 2027", installments: 6 },
+} as const;
 
 export default function InscricaoPage() {
+  const pathname = usePathname();
+  const slug = pathname.split("/").filter(Boolean).at(-1) || "andes-essencial";
+  const route = ROUTES[slug as keyof typeof ROUTES] ?? ROUTES["andes-essencial"];
+  const formatMoney = (value: number) => new Intl.NumberFormat(route.locale, { style: "currency", currency: route.currency, minimumFractionDigits: 2 }).format(value);
   const [room, setRoom] = useState<"duplo" | "single">("duplo");
   const [payment, setPayment] = useState<"pix" | "avista">("pix");
   const [installments, setInstallments] = useState(3);
@@ -19,7 +26,7 @@ export default function InscricaoPage() {
   const [finalized, setFinalized] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  const packagePrice = DOUBLE_PRICE + (room === "single" ? SINGLE_SUPPLEMENT : 0);
+  const packagePrice = route.price + (room === "single" ? route.single : 0);
   const cashDiscount = payment === "avista" ? packagePrice * 0.05 : 0;
   const total = packagePrice - cashDiscount;
   const entry = payment === "pix" ? Math.round(total * 0.3 * 100) / 100 : total;
@@ -50,6 +57,7 @@ export default function InscricaoPage() {
           installments,
           installment,
           entryDate,
+          slug,
           profile: Object.fromEntries(data.entries()) as Record<string, string>,
         }),
       });
@@ -61,16 +69,16 @@ export default function InscricaoPage() {
   };
 
   if (finalized) {
-    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Cadastro preenchido com sucesso.</h1><p>Bem-vindo ao Andes Essencial. A equipe Ekonova entrará em contato com os próximos passos.</p><a href="/">Voltar para a Ekonova Adventure</a></section></main>;
+    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Cadastro preenchido com sucesso.</h1><p>Bem-vindo ao {route.title}. A equipe Ekonova entrará em contato com os próximos passos.</p><a href="/">Voltar para a Ekonova Adventure</a></section></main>;
   }
 
   return (
     <main className="booking-shell">
       <header><a className="booking-logo" href="/"><Image src="/ekonova-logo.png" alt="Ekonova Adventure" width={204} height={75} priority /></a><p>Inscrição de viagem</p></header>
       <section className="booking-hero">
-        <p>10 A 17 DE MARÇO DE 2027 · MENDOZA, ARGENTINA</p>
-        <h1>Trekking, altitude e vinhos nos Andes.</h1>
-        <span>Andes Essencial: oito dias de montanha, cultura e gastronomia.</span>
+        <p>{route.date.toUpperCase()} · {route.destination.toUpperCase()}</p>
+        <h1>{route.hero}</h1>
+        <span>{route.description}</span>
       </section>
       <form onSubmit={submit} className="booking-layout">
         <section className="booking-card">
@@ -80,16 +88,16 @@ export default function InscricaoPage() {
           <label>E-mail<input name="email" type="email" required placeholder="voce@email.com" /></label>
           <label>WhatsApp<input name="phone" required placeholder="(00) 00000-0000" /></label>
           <fieldset><legend>Hospedagem</legend>
-            <button type="button" className={room === "duplo" ? "selected" : ""} onClick={() => setRoom("duplo")}><strong>Quarto duplo</strong><small>Valor padrão do pacote, por pessoa</small><b>{formatUsd(DOUBLE_PRICE)}</b></button>
-            <button type="button" className={room === "single" ? "selected" : ""} onClick={() => setRoom("single")}><strong>Quarto single</strong><small>Hospedagem solo: adicional de US$ 300,00</small><b>{formatUsd(DOUBLE_PRICE + SINGLE_SUPPLEMENT)}</b></button>
+            <button type="button" className={room === "duplo" ? "selected" : ""} onClick={() => setRoom("duplo")}><strong>Quarto duplo</strong><small>Valor padrão do pacote, por pessoa</small><b>{formatMoney(route.price)}</b></button>
+            <button type="button" className={room === "single" ? "selected" : ""} onClick={() => setRoom("single")}><strong>Quarto single</strong><small>Hospedagem solo: adicional de {formatMoney(route.single)}</small><b>{formatMoney(route.price + route.single)}</b></button>
           </fieldset>
           <fieldset><legend>Forma de pagamento</legend>
-            <button type="button" className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>30% de entrada e saldo em Pix, com último pagamento em janeiro de 2027</small><b>30% · {formatUsd(entry)}</b></button>
-            <button type="button" className={payment === "avista" ? "selected" : ""} onClick={() => setPayment("avista")}><strong>Pagamento à vista</strong><small>Desconto de 5% sobre o valor do pacote</small><b>{formatUsd(packagePrice * 0.95)}</b></button>
+            <button type="button" className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>{route.pix}</small><b>30% · {formatMoney(entry)}</b></button>
+            <button type="button" className={payment === "avista" ? "selected" : ""} onClick={() => setPayment("avista")}><strong>Pagamento à vista</strong><small>Desconto de 5% sobre o valor do pacote</small><b>{formatMoney(packagePrice * 0.95)}</b></button>
           </fieldset>
           {payment === "pix" && <fieldset><legend>Planeje o Pix</legend>
             <label>Data desejada para a entrada de 30%<input type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} required /></label>
-            <label>Parcelas do saldo<select value={installments} onChange={(event) => setInstallments(Number(event.target.value))}>{[1, 2, 3, 4, 5, 6].map((value) => <option key={value} value={value}>{value}x de {formatUsd(Math.ceil((balance / value) * 100) / 100)}</option>)}</select></label>
+            <label>Parcelas do saldo<select value={installments} onChange={(event) => setInstallments(Number(event.target.value))}>{Array.from({ length: route.installments }, (_, index) => index + 1).map((value) => <option key={value} value={value}>{value}x de {formatMoney(Math.ceil((balance / value) * 100) / 100)}</option>)}</select></label>
           </fieldset>}
           <button className="booking-submit">Continuar para cadastro completo</button>
           {done && <p className="booking-success">Agora complete sua ficha de viajante abaixo. Esses dados serão usados para a room list e a operação da viagem.</p>}
@@ -120,11 +128,11 @@ export default function InscricaoPage() {
           </section>}
         </section>
         <aside className="booking-summary">
-          <p>Resumo da reserva</p><h2>Andes Essencial</h2>
-          <div><span>Data</span><b>10-17 mar 2027</b></div><div><span>Hospedagem</span><b>Quarto {room}</b></div><div><span>Valor do pacote</span><b>{formatUsd(packagePrice)}</b></div>
-          {cashDiscount > 0 && <div><span>Desconto à vista</span><b>- {formatUsd(cashDiscount)}</b></div>}
-          {payment === "pix" ? <><div><span>Entrada Pix - 30%</span><b>{formatUsd(entry)}</b></div><div><span>Saldo parcelado</span><b>{installments}x de {formatUsd(installment)}</b></div></> : <div><span>Pagamento</span><b>À vista</b></div>}
-          <hr /><strong>Total {formatUsd(total)}</strong>
+          <p>Resumo da reserva</p><h2>{route.title}</h2>
+          <div><span>Data</span><b>{route.shortDate}</b></div><div><span>Hospedagem</span><b>Quarto {room}</b></div><div><span>Valor do pacote</span><b>{formatMoney(packagePrice)}</b></div>
+          {cashDiscount > 0 && <div><span>Desconto à vista</span><b>- {formatMoney(cashDiscount)}</b></div>}
+          {payment === "pix" ? <><div><span>Entrada Pix - 30%</span><b>{formatMoney(entry)}</b></div><div><span>Saldo parcelado</span><b>{installments}x de {formatMoney(installment)}</b></div></> : <div><span>Pagamento</span><b>À vista</b></div>}
+          <hr /><strong>Total {formatMoney(total)}</strong>
           <small>{payment === "pix" ? (entryDate ? `Entrada prevista para ${new Date(`${entryDate}T12:00:00`).toLocaleDateString("pt-BR")}` : "Escolha a data da entrada") : "Desconto de 5% aplicado"}</small>
           <p className="booking-note">Não incluso: passagens aéreas, refeições não indicadas, bebidas e serviços não citados no roteiro.</p>
         </aside>
