@@ -86,6 +86,7 @@ export default function ManagementPage() {
   const totalReceived = selectedPayments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
   const money = (value: number) => new Intl.NumberFormat(selectedDeparture?.currency === "BRL" ? "pt-BR" : "en-US", { style: "currency", currency: selectedDeparture?.currency ?? "USD" }).format(value / 100);
   const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+  const registrationUrl = selectedDeparture?.trips?.slug === "andes-essencial" ? "/inscricao" : `/inscricao/${selectedDeparture?.trips?.slug ?? ""}`;
 
   function showNotice(message: string) {
     setNotice(message);
@@ -128,7 +129,7 @@ export default function ManagementPage() {
               <p className="trip-subtitle">{selectedDeparture.trips?.category ?? "Roteiro"} <b /> {selectedDeparture.trips?.destination ?? "Destino a definir"}</p>
               <div className="trip-meta"><span><CalendarDays aria-hidden="true" />{formatDate(selectedDeparture.starts_on)} – {formatDate(selectedDeparture.ends_on)}</span><span><MapPinned aria-hidden="true" />{selectedDeparture.trips?.destination ?? "Destino"}</span><span><Users aria-hidden="true" />{selectedClients.length}/{selectedDeparture.capacity} inscrições</span></div>
             </div>
-            <div className="title-actions">{selectedDeparture.public_registration_enabled ? <a href={`/inscricao/${selectedDeparture.trips?.slug ?? ""}`} target="_blank" rel="noreferrer">Abrir link de inscrição</a> : <span>Link será liberado ao publicar a página do roteiro.</span>}</div>
+            <div className="title-actions">{selectedDeparture.public_registration_enabled ? <a href={registrationUrl} target="_blank" rel="noreferrer">Abrir link de inscrição</a> : <span>Link será liberado ao publicar a página do roteiro.</span>}</div>
           </section>
 
           <div className="management-layout">
@@ -139,7 +140,7 @@ export default function ManagementPage() {
 
               {activeTab === "Rooming list" ? <RoomingListModule reservations={selectedReservations} groups={roomGroups} onChange={async () => { if (selectedDeparture) setRoomGroups(await listRoomGroups(selectedDeparture.id)); }} onNotice={showNotice} /> : activeTab === "Participantes" ? <>
                 <section className="participants-panel">
-                  <div className="panel-heading"><h2>Inscrições recebidas <small>({selectedClients.length} de {selectedDeparture.capacity} vagas)</small></h2>{selectedDeparture.public_registration_enabled && <a className="panel-link" href={`/inscricao/${selectedDeparture.trips?.slug ?? ""}`} target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a>}</div>
+                  <div className="panel-heading"><h2>Inscrições recebidas <small>({selectedClients.length} de {selectedDeparture.capacity} vagas)</small></h2>{selectedDeparture.public_registration_enabled && <a className="panel-link" href={registrationUrl} target="_blank" rel="noreferrer"><Plus aria-hidden="true" />Abrir inscrição</a>}</div>
                   {selectedClients.length === 0 ? <div className="empty-records"><strong>Nenhuma inscrição recebida ainda.</strong><p>{selectedDeparture.public_registration_enabled ? "Compartilhe o link de inscrição para começar a formar o grupo." : "Esta saída está em preparação. O link será habilitado junto à página pública do roteiro."}</p></div> : <div className="participant-table" role="table">
                     <div className="participant-head" role="row"><span>Pessoa</span><span>Documentos</span><span>Pagamento</span><span>Preparação</span></div>
                     {selectedClients.map((client) => { const clientPayments = selectedPayments.filter((item) => item.reservations?.clients?.id === client.id); const paid = clientPayments.every((item) => item.status === "pago") && clientPayments.length > 0; return <div className="participant-row" role="row" key={client.id}>
@@ -163,7 +164,7 @@ export default function ManagementPage() {
               <div className="occupancy"><div className="occupancy-ring"><strong>{selectedClients.length}/{selectedDeparture.capacity}</strong></div><div><b>Inscrições recebidas</b><strong>{selectedClients.length} de {selectedDeparture.capacity} vagas</strong><small>{Math.max(selectedDeparture.capacity - selectedClients.length, 0)} vaga(s) disponível(is)</small></div></div>
               <div className="summary-block"><span>Total previsto</span><div><strong>{money(totalPlanned)}</strong><small>Recebido: {money(totalReceived)}</small></div><i><b style={{ width: totalPlanned ? `${Math.round((totalReceived / totalPlanned) * 100)}%` : "0%" }} /></i><em>{totalPlanned ? `${Math.round((totalReceived / totalPlanned) * 100)}%` : "0%"}</em></div>
               <div className="payments-list"><div className="section-label"><b>Próximos pagamentos</b></div>{selectedPayments.filter((item) => item.status !== "pago").slice(0, 3).map((item) => <article key={item.id}><i /><p>{item.reservations?.clients?.full_name ?? "Cliente"}</p><strong>{money(item.amount_cents)}<small>até {new Date(`${item.due_on}T12:00:00`).toLocaleDateString("pt-BR")}</small></strong></article>)}{selectedPayments.length === 0 && <p className="empty-payments">Nenhum lançamento financeiro registrado.</p>}</div>
-              {selectedDeparture.public_registration_enabled ? <a className="charge-button" href={`/inscricao/${selectedDeparture.trips?.slug ?? ""}`} target="_blank" rel="noreferrer"><Users aria-hidden="true" />Compartilhar inscrição</a> : <span className="disabled-link">Inscrições aguardando página pública</span>}
+              {selectedDeparture.public_registration_enabled ? <a className="charge-button" href={registrationUrl} target="_blank" rel="noreferrer"><Users aria-hidden="true" />Compartilhar inscrição</a> : <span className="disabled-link">Inscrições aguardando página pública</span>}
               <div className="trip-reminders"><h3>Próximo passo</h3><p>Envie o link de inscrição para os viajantes. A preparação será organizada conforme os cadastros reais entrarem.</p></div>
             </aside>
           </div></>}</>}
