@@ -264,6 +264,14 @@ export async function updateDepartureCostSettings(departureId: string, input: Pi
   return payload[0] as DepartureRecord;
 }
 
+export async function updateDepartureCapacity(departureId: string, capacity: number) {
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/departures?id=eq.${encodeURIComponent(departureId)}`), { method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify({ capacity }) });
+  const payload = await response.json() as DepartureRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível atualizar a quantidade de vagas.");
+  return payload[0] as DepartureRecord;
+}
+
 export async function createContactLog(input: Pick<ContactLogRecord, "client_id" | "channel" | "template_name" | "message">) {
   const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const response = await fetch(endpoint("/rest/v1/client_contact_logs"), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
