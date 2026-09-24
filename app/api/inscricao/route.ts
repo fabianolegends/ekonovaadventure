@@ -3,11 +3,16 @@ import { NextResponse } from "next/server";
 type BookingPayload = {
   name?: string; email?: string; room?: "duplo" | "single"; payment?: "pix" | "avista";
   total?: number; entry?: number; installments?: number; installment?: number; entryDate?: string;
+  slug?: string;
   profile?: Record<string, string>;
 };
 
-const TRIP = { title: "Andes Essencial", slug: "andes-essencial", category: "Trekking", destination: "Mendoza, Argentina" };
-const DEPARTURE = { starts_on: "2027-03-10", ends_on: "2027-03-17", capacity: 12, price_cents: 139900, status: "em_formacao", notes: "Valores em USD" };
+const ROUTES = {
+  "andes-essencial": { trip: { title: "Andes Essencial", slug: "andes-essencial", category: "Trekking", destination: "Mendoza, Argentina" }, departure: { starts_on: "2027-03-10", ends_on: "2027-03-17", capacity: 12, price_cents: 139900, single_supplement_cents: 30000, currency: "USD", public_registration_enabled: true } },
+  "trekking-caminhos-do-ouro": { trip: { title: "Trekking Caminhos do Ouro", slug: "trekking-caminhos-do-ouro", category: "Trekking", destination: "Ouro Preto, Tiradentes e Lavras Novas, MG" }, departure: { starts_on: "2027-06-10", ends_on: "2027-06-17", capacity: 12, price_cents: 399900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true } },
+  "biketour-caminhos-do-ouro": { trip: { title: "Biketour Caminhos do Ouro", slug: "biketour-caminhos-do-ouro", category: "Biketour", destination: "Ouro Preto e região, MG" }, departure: { starts_on: "2027-06-04", ends_on: "2027-06-10", capacity: 12, price_cents: 449900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true } },
+  "trekking-atacama-essencia-2027": { trip: { title: "Trekking Atacama na sua Essência 2027", slug: "trekking-atacama-essencia-2027", category: "Trekking", destination: "San Pedro de Atacama, Chile" }, departure: { starts_on: "2027-09-16", ends_on: "2027-09-24", capacity: 12, price_cents: 179900, single_supplement_cents: 45000, currency: "USD", public_registration_enabled: true } },
+} as const;
 
 function addMonths(date: string, amount: number) {
   const result = new Date(`${date}T12:00:00`);
@@ -17,8 +22,9 @@ function addMonths(date: string, amount: number) {
 
 export async function POST(request: Request) {
   const booking = await request.json() as BookingPayload;
+  const route = ROUTES[booking.slug as keyof typeof ROUTES];
   const total = booking.total ?? 0;
-  if (!booking.email || !booking.name || !Number.isFinite(total)) {
+  if (!route || !booking.email || !booking.name || !Number.isFinite(total)) {
     return NextResponse.json({ error: "Dados de inscrição incompletos." }, { status: 400 });
   }
 
@@ -39,10 +45,11 @@ export async function POST(request: Request) {
 
   try {
     const dueDate = booking.entryDate || new Date().toISOString().slice(0, 10);
-    const tripRows = await rest(`trips?slug=eq.${TRIP.slug}&select=id`);
-    const trip = tripRows[0] || (await rest("trips", { method: "POST", body: JSON.stringify(TRIP) }))[0];
-    const departureRows = await rest(`departures?trip_id=eq.${trip.id}&starts_on=eq.${DEPARTURE.starts_on}&select=id`);
-    const departure = departureRows[0] || (await rest("departures", { method: "POST", body: JSON.stringify({ ...DEPARTURE, trip_id: trip.id }) }))[0];
+    const tripRows = await rest(`trips?slug=eq.${route.trip.slug}&select=id`);
+    const trip = tripRows[0] || (await rest("trips", { method: "POST", body: JSON.stringify(route.trip) }))[0];
+    const departureRows = await rest(`departures?trip_id=eq.${trip.id}&starts_on=eq.${route.departure.starts_on}&select=id,public_registration_enabled`);
+    const departure = departureRows[0] || (await rest("departures", { method: "POST", body: JSON.stringify({ ...route.departure, trip_id: trip.id, status: "em_formacao", booking_enabled: true, cash_discount_percent: 5, max_pix_installments: 6 }) }))[0];
+    if (!departure.public_registration_enabled) return NextResponse.json({ error: "As inscrições para esta saída ainda não estão abertas." }, { status: 403 });
 
     const profile = booking.profile || {};
     const clientData = {
@@ -68,10 +75,10 @@ export async function POST(request: Request) {
 
     await rest(`payments?reservation_id=eq.${reservation.id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
     const paymentRows = booking.payment === "avista"
-      ? [{ reservation_id: reservation.id, amount_cents: Math.round(total * 100), due_on: dueDate, method: "pix", status: "pendente", reference: "USD - pagamento à vista" }]
+      ? [{ reservation_id: reservation.id, amount_cents: Math.round(total * 100), due_on: dueDate, method: "pix", status: "pendente", reference: `${route.departure.currency} - pagamento à vista` }]
       : [
-          { reservation_id: reservation.id, amount_cents: Math.round((booking.entry || 0) * 100), due_on: dueDate, method: "pix", status: "pendente", reference: "USD - entrada 30%" },
-          ...Array.from({ length: booking.installments || 0 }, (_, index) => ({ reservation_id: reservation.id, amount_cents: Math.round((booking.installment || 0) * 100), due_on: addMonths(dueDate, index + 1), method: "pix", status: "pendente", reference: `USD - parcela ${index + 1}` })),
+          { reservation_id: reservation.id, amount_cents: Math.round((booking.entry || 0) * 100), due_on: dueDate, method: "pix", status: "pendente", reference: `${route.departure.currency} - entrada 30%` },
+          ...Array.from({ length: booking.installments || 0 }, (_, index) => ({ reservation_id: reservation.id, amount_cents: Math.round((booking.installment || 0) * 100), due_on: addMonths(dueDate, index + 1), method: "pix", status: "pendente", reference: `${route.departure.currency} - parcela ${index + 1}` })),
         ];
     await rest("payments", { method: "POST", body: JSON.stringify(paymentRows) });
 
