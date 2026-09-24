@@ -2,10 +2,11 @@
 
 type Session = { access_token: string; refresh_token: string; user: { id: string; email?: string } };
 export type ClientRecord = { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; cpf: string | null; rg: string | null; passport_number: string | null; street: string | null; neighborhood: string | null; postal_code: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null; created_at: string };
-export type PaymentRecord = { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { status: string; clients: { full_name: string } | null } | null };
-export type ReservationRecord = { id: string; departure_id: string; room_type: "duplo" | "single" | null; status: string; payment_plan: string | null; created_at: string; clients: { full_name: string; email: string | null; phone: string | null; city: string | null; state: string | null; cpf: string | null; rg: string | null; passport_number: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null } | null };
+export type PaymentRecord = { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { departure_id: string; status: string; clients: { id: string; full_name: string } | null } | null };
+export type ReservationRecord = { id: string; departure_id: string; room_type: "duplo" | "single" | null; status: string; payment_plan: string | null; created_at: string; clients: { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; state: string | null; cpf: string | null; rg: string | null; passport_number: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null } | null };
 export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
 export type ContactLogRecord = { id: string; client_id: string; channel: string; template_name: string; message: string; created_at: string; clients: { full_name: string } | null };
+export type DepartureRecord = { id: string; starts_on: string; ends_on: string; capacity: number; price_cents: number; status: string; notes: string | null; single_supplement_cents: number; max_pix_installments: number; booking_enabled: boolean; currency: "USD" | "BRL"; cash_discount_percent: number; pix_final_due_on: string | null; card_max_installments: number | null; public_registration_enabled: boolean; trips: { title: string; slug: string; category: string; destination: string } | null };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -80,7 +81,7 @@ export async function createClient(input: Omit<ClientRecord, "id" | "created_at"
 
 export async function listPayments() {
   const session = getSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(status,clients(full_name))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const response = await fetch(endpoint("/rest/v1/payments?select=id,amount_cents,due_on,paid_on,status,reference,reservations(departure_id,status,clients(id,full_name))&order=due_on.asc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as PaymentRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar os pagamentos.");
   return payload as PaymentRecord[];
@@ -89,10 +90,20 @@ export async function listPayments() {
 export async function listReservations() {
   const session = getSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  const response = await fetch(endpoint("/rest/v1/reservations?select=id,departure_id,room_type,status,payment_plan,created_at,clients(full_name,email,phone,city,state,cpf,rg,passport_number,emergency_contact_name,emergency_contact_phone,health_plan,health_plan_phone)&order=created_at.desc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const response = await fetch(endpoint("/rest/v1/reservations?select=id,departure_id,room_type,status,payment_plan,created_at,clients(id,full_name,email,phone,city,state,cpf,rg,passport_number,emergency_contact_name,emergency_contact_phone,health_plan,health_plan_phone)&order=created_at.desc"), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
   const payload = await response.json() as ReservationRecord[] & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar as reservas.");
   return payload as ReservationRecord[];
+}
+
+export async function listDepartures() {
+  const session = getSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const fields = "id,starts_on,ends_on,capacity,price_cents,status,notes,single_supplement_cents,max_pix_installments,booking_enabled,currency,cash_discount_percent,pix_final_due_on,card_max_installments,public_registration_enabled,trips(title,slug,category,destination)";
+  const response = await fetch(endpoint(`/rest/v1/departures?select=${encodeURIComponent(fields)}&order=starts_on.asc`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as DepartureRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar as saídas.");
+  return payload as DepartureRecord[];
 }
 
 export async function listRoomGroups(departureId: string) {
