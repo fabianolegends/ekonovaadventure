@@ -12,7 +12,6 @@ import {
   LayoutDashboard,
   MapPinned,
   MoreVertical,
-  Plane,
   Plus,
   Settings,
   Users,
@@ -27,7 +26,7 @@ void financeStyles;
 
 const navItems = [
   [LayoutDashboard, "Início"], [MapPinned, "Saídas"], [Users, "Clientes"], [WalletCards, "Financeiro"],
-  [ClipboardCheck, "Operações"], [Plane, "Equipamentos"], [FileText, "Documentos"], [MessageCircle, "Comunicação"], [Landmark, "Relatórios"],
+  [ClipboardCheck, "Operações"], [FileText, "Documentos"], [MessageCircle, "Comunicação"], [Landmark, "Relatórios"],
 ] as const;
 
 const modules = {
@@ -36,7 +35,6 @@ const modules = {
   "Clientes": { eyebrow: "Relacionamento", title: "Clientes e viajantes", summary: "Cadastros, contatos e documentos em uma única ficha.", cards: [] },
   "Financeiro": { eyebrow: "Fluxo financeiro", title: "Pagamentos com clareza", summary: "Entradas e parcelas registradas nas inscrições reais.", cards: [] },
   "Operações": { eyebrow: "Bastidores da viagem", title: "Operação", summary: "Organize os detalhes à medida que o grupo for formado.", cards: [] },
-  "Equipamentos": { eyebrow: "Preparação", title: "Equipamentos e segurança", summary: "Acompanhe a preparação conforme os viajantes se cadastrarem.", cards: [] },
   "Documentos": { eyebrow: "Conferência", title: "Documentos", summary: "Passaportes e informações de saúde serão organizados por inscrição.", cards: [] },
   "Comunicação": { eyebrow: "WhatsApp e relacionamento", title: "Comunicação", summary: "Use roteiros de mensagem vinculados a dados reais.", cards: [] },
   "Relatórios": { eyebrow: "Leitura do negócio", title: "Relatórios", summary: "Acompanhe ocupação e receita quando as inscrições começarem.", cards: [] },
@@ -93,6 +91,8 @@ export default function ManagementPage() {
   const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
   const registrationUrl = selectedDeparture?.trips?.slug === "andes-essencial" ? "/inscricao" : `/inscricao/${selectedDeparture?.trips?.slug ?? ""}`;
 
+  const currentUser = userEmail?.toLowerCase() === "cristiane@ekonovaadv.com.br" ? { initials: "CP", name: "Cristiane Pellenz" } : { initials: "FL", name: "Fernanda Lima" };
+
   function showNotice(message: string) {
     setNotice(message);
     window.setTimeout(() => setNotice(null), 3400);
@@ -138,7 +138,7 @@ export default function ManagementPage() {
         <header className="management-topbar">
           <label><span className="sr-only">Buscar</span><input placeholder="Buscar saídas, clientes, reservas..." /></label>
           <button className="icon-button" aria-label="Notificações" onClick={() => showNotice("Você tem 3 pendências para hoje.")}><Bell aria-hidden="true" /><i /></button>
-          <button className="current-user" onClick={() => { signOut(); window.location.assign("/gestao/login"); }} title="Sair da gestão"><span>FL</span><p><strong>Fernanda Lima</strong><small>{userEmail ?? "Ambiente de demonstração"}</small></p><ChevronDown aria-hidden="true" /></button>
+          <button className="current-user" onClick={() => { signOut(); window.location.assign("/gestao/login"); }} title="Sair da gestão"><span>{currentUser.initials}</span><p><strong>{currentUser.name}</strong><small>{userEmail ?? "Ambiente de demonstração"}</small></p><ChevronDown aria-hidden="true" /></button>
         </header>
 
         <div className="management-page">
