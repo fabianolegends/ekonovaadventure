@@ -10,7 +10,7 @@ type BookingPayload = {
 const ROUTES = {
   "andes-essencial": { trip: { title: "Andes Essencial", slug: "andes-essencial", category: "Trekking", destination: "Mendoza, Argentina" }, departure: { starts_on: "2027-03-10", ends_on: "2027-03-17", capacity: 12, price_cents: 139900, single_supplement_cents: 30000, currency: "USD", public_registration_enabled: true } },
   "trekking-caminhos-do-ouro": { trip: { title: "Trekking Caminhos do Ouro", slug: "trekking-caminhos-do-ouro", category: "Trekking", destination: "Ouro Preto, Tiradentes e Lavras Novas, MG" }, departure: { starts_on: "2027-06-10", ends_on: "2027-06-17", capacity: 12, price_cents: 399900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true } },
-  "biketour-caminhos-do-ouro": { trip: { title: "Biketour Caminhos do Ouro", slug: "biketour-caminhos-do-ouro", category: "Biketour", destination: "Ouro Preto e região, MG" }, departure: { starts_on: "2027-06-04", ends_on: "2027-06-10", capacity: 12, price_cents: 449900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true } },
+  "biketour-caminhos-do-ouro": { trip: { title: "Biketour Caminhos do Ouro", slug: "biketour-caminhos-do-ouro", category: "Biketour", destination: "Ouro Preto e região, MG" }, departure: { starts_on: "2027-06-04", ends_on: "2027-06-10", capacity: 12, price_cents: 449900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true }, maxPixInstallments: 6, entryDeadline: "2026-12-05" },
   "trekking-atacama-essencia-2027": { trip: { title: "Trekking Atacama na sua Essência 2027", slug: "trekking-atacama-essencia-2027", category: "Trekking", destination: "San Pedro de Atacama, Chile" }, departure: { starts_on: "2027-09-16", ends_on: "2027-09-24", capacity: 12, price_cents: 179900, single_supplement_cents: 45000, currency: "USD", public_registration_enabled: true } },
 } as const;
 
@@ -26,6 +26,11 @@ export async function POST(request: Request) {
   const total = booking.total ?? 0;
   if (!route || !booking.email || !booking.name || !Number.isFinite(total)) {
     return NextResponse.json({ error: "Dados de inscrição incompletos." }, { status: 400 });
+  }
+  if (booking.payment === "pix") {
+    if (!booking.entryDate) return NextResponse.json({ error: "Escolha a data da entrada." }, { status: 400 });
+    if ("entryDeadline" in route && route.entryDeadline && booking.entryDate > route.entryDeadline) return NextResponse.json({ error: "Para o Biketour, a entrada deve ser agendada até 05/12/2026." }, { status: 400 });
+    if ("maxPixInstallments" in route && route.maxPixInstallments && (!Number.isInteger(booking.installments) || (booking.installments ?? 0) < 1 || (booking.installments ?? 0) > route.maxPixInstallments)) return NextResponse.json({ error: "Para o Biketour, o saldo pode ser parcelado em até 6x." }, { status: 400 });
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
