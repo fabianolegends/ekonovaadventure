@@ -7,7 +7,7 @@ export type ReservationRecord = { id: string; departure_id: string; room_type: "
 export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
 export type ContactLogRecord = { id: string; client_id: string; channel: string; template_name: string; message: string; created_at: string; clients: { full_name: string } | null };
 export type DepartureCostRecord = { id: string; departure_id: string; cost_on: string; category: string; description: string; supplier: string | null; cost_basis: "por_viajante" | "grupo"; planned_quantity: number; planned_unit_cents: number; actual_quantity: number | null; actual_unit_cents: number | null; currency: "USD" | "BRL"; notes: string | null; created_at: string };
-export type DepartureRecord = { id: string; starts_on: string; ends_on: string; capacity: number; price_cents: number; status: string; notes: string | null; single_supplement_cents: number; max_pix_installments: number; booking_enabled: boolean; currency: "USD" | "BRL"; cash_discount_percent: number; pix_final_due_on: string | null; card_max_installments: number | null; public_registration_enabled: boolean; cost_reporting_currency: "USD" | "BRL"; cost_exchange_rate: number; target_margin_percent: number; target_profit_cents: number; trips: { title: string; slug: string; category: string; destination: string } | null };
+export type TeamMemberRecord = { id: string; full_name: string; role: string; active: boolean; avatar_url: string | null };\nexport type DepartureRecord = { id: string; starts_on: string; ends_on: string; capacity: number; price_cents: number; status: string; notes: string | null; single_supplement_cents: number; max_pix_installments: number; booking_enabled: boolean; currency: "USD" | "BRL"; cash_discount_percent: number; pix_final_due_on: string | null; card_max_installments: number | null; public_registration_enabled: boolean; cost_reporting_currency: "USD" | "BRL"; cost_exchange_rate: number; target_margin_percent: number; target_profit_cents: number; trips: { title: string; slug: string; category: string; destination: string } | null };
 
 const storageKey = "ekonova-management-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -93,6 +93,32 @@ export async function updatePassword(accessToken: string, password: string) {
   const payload = await response.json() as Session & { message?: string };
   if (!response.ok) throw new Error(payload.message ?? "Não foi possível definir a nova senha.");
   return payload;
+}
+
+export async function getMyProfile() {
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/team_members?id=eq.${encodeURIComponent(session.user.id)}&select=id,full_name,role,active,avatar_url`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as TeamMemberRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar o perfil.");
+  return payload[0] ?? null;
+}
+
+export async function updateMyProfile(input: Pick<TeamMemberRecord, "full_name" | "avatar_url">) {
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/team_members?id=eq.${encodeURIComponent(session.user.id)}`), { method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
+  const payload = await response.json() as TeamMemberRecord[] & { message?: string };
+  if (!response.ok || !payload[0]) throw new Error(payload.message ?? "Não foi possível atualizar o perfil.");
+  return payload[0];
+}
+
+export async function uploadProfilePhoto(file: File) {
+  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) throw new Error("Escolha uma imagem de até 5 MB.");
+  const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
+  const path = `${session.user.id}/perfil.${extension}`;
+  const response = await fetch(endpoint(`/storage/v1/object/team-avatars/${path}`), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": file.type, "x-upsert": "true" }, body: file });
+  if (!response.ok) throw new Error("Não foi possível enviar a foto agora.");
+  return endpoint(`/storage/v1/object/public/team-avatars/${path}?v=${Date.now()}`);
 }
 
 export async function listClients() {
