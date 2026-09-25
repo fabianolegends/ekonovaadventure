@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
 import "./inscricao.css";
 
@@ -25,6 +26,7 @@ export default function InscricaoPage() {
   const [completeForm, setCompleteForm] = useState(false);
   const [finalized, setFinalized] = useState(false);
   const [saveError, setSaveError] = useState("");
+  const [submittedEmail, setSubmittedEmail] = useState("");
   const addMonths = (value: string, amount: number) => { const result = new Date(`${value}T12:00:00`); result.setMonth(result.getMonth() + amount); return result.toISOString().slice(0, 10); };
   const availableInstallments = !route.finalPaymentDue || !entryDate ? route.installments : Math.max(1, Math.min(route.installments, Array.from({ length: route.installments }, (_, index) => index + 1).filter((value) => addMonths(entryDate, value) <= route.finalPaymentDue).at(-1) ?? 1));
 
@@ -65,6 +67,7 @@ export default function InscricaoPage() {
       });
       const result = await response.json().catch(() => null) as { error?: string } | null;
       if (!response.ok) throw new Error(result?.error || "Não foi possível concluir o cadastro agora.");
+      setSubmittedEmail(email);
       setFinalized(true);
     } catch (error) {
       setSaveError(error instanceof Error ? error.message : "Não foi possível concluir o cadastro agora. Tente novamente.");
@@ -72,12 +75,12 @@ export default function InscricaoPage() {
   };
 
   if (finalized) {
-    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Cadastro preenchido com sucesso.</h1><p>Bem-vindo ao {route.title}. A equipe Ekonova entrará em contato com os próximos passos.</p><a href="/">Voltar para a Ekonova Adventure</a></section></main>;
+    return <main className="welcome-shell"><section className="welcome-card"><p className="booking-eyebrow">INSCRIÇÃO RECEBIDA</p><h1>Cadastro preenchido com sucesso.</h1><p>Bem-vindo ao {route.title}. A equipe Ekonova entrará em contato com os próximos passos.</p><Link href={`/minha-area?email=${encodeURIComponent(submittedEmail)}`}>Criar acesso à minha área</Link><Link href="/">Voltar para a Ekonova Adventure</Link></section></main>;
   }
 
   return (
     <main className="booking-shell">
-      <header><a className="booking-logo" href="/"><Image src="/ekonova-logo.png" alt="Ekonova Adventure" width={204} height={75} priority /></a><p>Inscrição de viagem</p></header>
+      <header><Link className="booking-logo" href="/"><Image src="/ekonova-logo.png" alt="Ekonova Adventure" width={204} height={75} priority /></Link><p>Inscrição de viagem</p></header>
       <section className="booking-hero">
         <p>{route.date.toUpperCase()} · {route.destination.toUpperCase()}</p>
         <h1>{route.hero}</h1>
