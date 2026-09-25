@@ -7,10 +7,19 @@ export type ReservationRecord = { id: string; departure_id: string; room_type: "
 export type RoomGroupRecord = { id: string; departure_id: string; label: string; room_type: "matrimonial" | "twin" | "single"; notes: string | null; room_group_members: { reservation_id: string }[] };
 export type ContactLogRecord = { id: string; client_id: string; channel: string; template_name: string; message: string; created_at: string; clients: { full_name: string } | null };
 export type DepartureCostRecord = { id: string; departure_id: string; cost_on: string; category: string; description: string; supplier: string | null; cost_basis: "por_viajante" | "grupo"; planned_quantity: number; planned_unit_cents: number; actual_quantity: number | null; actual_unit_cents: number | null; currency: "USD" | "BRL"; notes: string | null; created_at: string };
-export type TeamMemberRecord = { id: string; full_name: string; role: string; active: boolean; avatar_url: string | null };
 export type DepartureRecord = { id: string; starts_on: string; ends_on: string; capacity: number; price_cents: number; status: string; notes: string | null; single_supplement_cents: number; max_pix_installments: number; booking_enabled: boolean; currency: "USD" | "BRL"; cash_discount_percent: number; pix_final_due_on: string | null; card_max_installments: number | null; public_registration_enabled: boolean; cost_reporting_currency: "USD" | "BRL"; cost_exchange_rate: number; target_margin_percent: number; target_profit_cents: number; trips: { title: string; slug: string; category: string; destination: string } | null };
+export type ClientDocumentRecord = { id: string; title: string; document_type: string; document_url: string | null; published_at: string };
+export type ClientPortalRecord = ClientRecord & {
+  medical_conditions: string | null; allergies: string | null; medications: string | null; dietary_restrictions: string | null;
+  reservations: {
+    id: string; departure_id: string; room_type: "duplo" | "single" | null; status: string; payment_plan: string | null; quoted_price_cents: number | null; created_at: string;
+    departures: { starts_on: string; ends_on: string; currency: "USD" | "BRL"; trips: { title: string; destination: string } | null } | null;
+    payments: { id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null }[];
+  }[];
+};
 
 const storageKey = "ekonova-management-session";
+const clientStorageKey = "ekonova-client-session";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
@@ -24,6 +33,15 @@ function endpoint(path: string) {
 export function getSession(): Session | null {
   if (typeof window === "undefined") return null;
   try { return JSON.parse(window.localStorage.getItem(storageKey) ?? "null") as Session | null; } catch { return null; }
+}
+
+function getStoredSession(keyName: string): Session | null {
+  if (typeof window === "undefined") return null;
+  try { return JSON.parse(window.localStorage.getItem(keyName) ?? "null") as Session | null; } catch { return null; }
+}
+
+export function getClientSession(): Session | null {
+  return getStoredSession(clientStorageKey);
 }
 
 async function getValidSession(): Promise<Session | null> {
@@ -96,30 +114,94 @@ export async function updatePassword(accessToken: string, password: string) {
   return payload;
 }
 
-export async function getMyProfile() {
-  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  const response = await fetch(endpoint(`/rest/v1/team_members?id=eq.${encodeURIComponent(session.user.id)}&select=id,full_name,role,active,avatar_url`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
-  const payload = await response.json() as TeamMemberRecord[] & { message?: string };
-  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar o perfil.");
+async function getValidClientSession(): Promise<Session | null> {
+  const current = getClientSession();
+  if (!current) return null;
+  try {
+    const encodedPayload = current.access_token.split(".")[1];
+    const payload = JSON.parse(atob(encodedPayload.replace(/-/g, "+").replace(/_/g, "/"))) as { exp?: number };
+    if (!payload.exp || payload.exp * 1000 > Date.now() + 60_000) return current;
+  } catch { return current; }
+
+  const response = await fetch(endpoint("/auth/v1/token?grant_type=refresh_token"), {
+    method: "POST", headers: { apikey: key!, "Content-Type": "application/json" }, body: JSON.stringify({ refresh_token: current.refresh_token }),
+  });
+  const refreshed = await response.json() as Partial<Session> & { error_description?: string; msg?: string };
+  if (!response.ok || !refreshed.access_token || !refreshed.refresh_token) {
+    signOutClient();
+    throw new Error(refreshed.error_description ?? refreshed.msg ?? "Sua sessão expirou. Entre novamente.");
+  }
+  const session: Session = { ...current, ...refreshed, user: refreshed.user ?? current.user };
+  window.localStorage.setItem(clientStorageKey, JSON.stringify(session));
+  return session;
+}
+
+export function signOutClient() {
+  if (typeof window !== "undefined") window.localStorage.removeItem(clientStorageKey);
+}
+
+export function saveClientSession(session: Session) {
+  if (typeof window !== "undefined") window.localStorage.setItem(clientStorageKey, JSON.stringify(session));
+}
+
+export async function signInClientWithPassword(email: string, password: string) {
+  const response = await fetch(endpoint("/auth/v1/token?grant_type=password"), {
+    method: "POST", headers: { apikey: key!, "Content-Type": "application/json" }, body: JSON.stringify({ email, password }),
+  });
+  const payload = await response.json() as Session & { error_description?: string; msg?: string };
+  if (!response.ok || !payload.access_token) throw new Error(payload.error_description ?? payload.msg ?? "Não foi possível entrar. Confira o e-mail e a senha.");
+  saveClientSession(payload);
+  return payload;
+}
+
+export async function signUpClient(email: string, password: string) {
+  const response = await fetch(endpoint("/auth/v1/signup"), {
+    method: "POST",
+    headers: { apikey: key!, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password, data: { account_type: "traveler" }, options: { emailRedirectTo: "https://www.ekonovaadv.com.br/minha-area" } }),
+  });
+  const payload = await response.json() as Partial<Session> & { error_description?: string; msg?: string; user?: { id: string } };
+  if (!response.ok || !payload.user) throw new Error(payload.error_description ?? payload.msg ?? "Não foi possível criar seu acesso.");
+  if (payload.access_token && payload.refresh_token && payload.user) saveClientSession(payload as Session);
+  return { requiresEmailConfirmation: !payload.access_token };
+}
+
+export async function requestClientPasswordReset(email: string) {
+  const response = await fetch(endpoint("/auth/v1/recover"), {
+    method: "POST", headers: { apikey: key!, "Content-Type": "application/json" },
+    body: JSON.stringify({ email, redirect_to: "https://www.ekonovaadv.com.br/minha-area" }),
+  });
+  if (!response.ok) throw new Error("Não foi possível enviar o e-mail de recuperação.");
+}
+
+export async function loadClientPortal() {
+  const session = await getValidClientSession();
+  if (!session) throw new Error("Entre para acessar sua área.");
+  const fields = "id,full_name,email,phone,city,cpf,rg,passport_number,street,neighborhood,postal_code,emergency_contact_name,emergency_contact_phone,health_plan,health_plan_phone,created_at,medical_conditions,allergies,medications,dietary_restrictions,reservations(id,departure_id,room_type,status,payment_plan,quoted_price_cents,created_at,departures(starts_on,ends_on,currency,trips(title,destination)),payments(id,amount_cents,due_on,paid_on,status,reference))";
+  const response = await fetch(endpoint(`/rest/v1/clients?select=${encodeURIComponent(fields)}&limit=1`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as ClientPortalRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar seus dados.");
   return payload[0] ?? null;
 }
 
-export async function updateMyProfile(input: Pick<TeamMemberRecord, "full_name" | "avatar_url">) {
-  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  const response = await fetch(endpoint(`/rest/v1/team_members?id=eq.${encodeURIComponent(session.user.id)}`), { method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input) });
-  const payload = await response.json() as TeamMemberRecord[] & { message?: string };
-  if (!response.ok || !payload[0]) throw new Error(payload.message ?? "Não foi possível atualizar o perfil.");
+export async function updateClientPortalProfile(clientId: string, input: Partial<Pick<ClientPortalRecord, "full_name" | "phone" | "city" | "cpf" | "rg" | "passport_number" | "street" | "neighborhood" | "postal_code" | "emergency_contact_name" | "emergency_contact_phone" | "health_plan" | "health_plan_phone" | "medical_conditions" | "allergies" | "medications" | "dietary_restrictions">>) {
+  const session = await getValidClientSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/clients?id=eq.${encodeURIComponent(clientId)}`), {
+    method: "PATCH", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json", Prefer: "return=representation" }, body: JSON.stringify(input),
+  });
+  const payload = await response.json() as ClientPortalRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível atualizar seu cadastro.");
   return payload[0];
 }
 
-export async function uploadProfilePhoto(file: File) {
-  const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
-  if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) throw new Error("Escolha uma imagem de até 5 MB.");
-  const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const path = `${session.user.id}/perfil.${extension}`;
-  const response = await fetch(endpoint(`/storage/v1/object/team-avatars/${path}`), { method: "POST", headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": file.type, "x-upsert": "true" }, body: file });
-  if (!response.ok) throw new Error("Não foi possível enviar a foto agora.");
-  return endpoint(`/storage/v1/object/public/team-avatars/${path}?v=${Date.now()}`);
+export async function listClientDocuments(clientId: string) {
+  const session = await getValidClientSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch(endpoint(`/rest/v1/client_documents?client_id=eq.${encodeURIComponent(clientId)}&select=id,title,document_type,document_url,published_at&order=published_at.desc`), { headers: { apikey: key!, Authorization: `Bearer ${session.access_token}` } });
+  const payload = await response.json() as ClientDocumentRecord[] & { message?: string };
+  if (!response.ok) throw new Error(payload.message ?? "Não foi possível carregar seus documentos.");
+  return payload as ClientDocumentRecord[];
 }
 
 export async function listClients() {
