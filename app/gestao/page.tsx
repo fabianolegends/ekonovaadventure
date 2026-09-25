@@ -20,7 +20,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import financeStyles from "./finance.module.css";
-import { assignReservationToRoom, createClient, createContactLog, createDepartureCost, createRoomGroup, deleteClientWithReservations, deleteReservation, getSession, listClients, listContactLogs, listDepartureCosts, listDepartures, listPayments, listReservations, listRoomGroups, markPaymentAsPaid, replacePendingPaymentPlan, signOut, supabaseConfigured, updateClient, updateDepartureCapacity, updateDepartureCostActual, updateDepartureCostSettings, type ClientRecord, type ContactLogRecord, type DepartureCostRecord, type DepartureRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord } from "../../lib/supabase-browser";
+import { assignReservationToRoom, createClient, createContactLog, createDepartureCost, createRoomGroup, deleteClientWithReservations, deleteReservation, getSession, listClients, listContactLogs, listDepartureCosts, listDepartures, listPayments, listReservations, listRoomGroups, markPaymentAsPaid, replacePendingPaymentPlan, signOut, supabaseConfigured, updateClient, updateDepartureCapacity, updateDepartureCostActual, updateDepartureCostSettings, getMyProfile, updateMyProfile, uploadProfilePhoto, type ClientRecord, type ContactLogRecord, type DepartureCostRecord, type DepartureRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord, type TeamMemberRecord } from "../../lib/supabase-browser";
 
 void financeStyles;
 
@@ -49,7 +49,7 @@ export default function ManagementPage() {
   const [activeModule, setActiveModule] = useState<keyof typeof modules>("Saídas");
   const [notice, setNotice] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);\n  const [profile, setProfile] = useState<TeamMemberRecord | null>(null);\n  const [profileOpen, setProfileOpen] = useState(false);\n  const [profileName, setProfileName] = useState("");\n  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);\n  const [profileSaving, setProfileSaving] = useState(false);
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
@@ -91,7 +91,23 @@ export default function ManagementPage() {
   const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
   const registrationUrl = selectedDeparture?.trips?.slug === "andes-essencial" ? "/inscricao" : `/inscricao/${selectedDeparture?.trips?.slug ?? ""}`;
 
-  const currentUser = userEmail?.toLowerCase() === "cristiane@ekonovaadv.com.br" ? { initials: "CP", name: "Cristiane Pellenz" } : { initials: "FL", name: "Fernanda Lima" };
+  const fallbackName = userEmail?.toLowerCase() === "fabiano@ekonovaadv.com.br" ? "Fabiano Pellenz" : userEmail?.toLowerCase() === "cristiane@ekonovaadv.com.br" ? "Cristiane Pellenz" : (userEmail?.split("@")[0] ?? "Equipe Ekonova").replace(/(^|[._-])([a-z])/g, (_match, prefix, letter) => `${prefix === "." || prefix === "_" || prefix === "-" ? " " : ""}${letter.toUpperCase()}`);
+  const currentUser = { name: profile?.full_name || fallbackName, initials: (profile?.full_name || fallbackName).split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase(), avatarUrl: profile?.avatar_url ?? null };
+
+  async function saveProfile(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const fullName = profileName.trim();
+    if (!fullName) { showNotice("Informe seu nome para salvar o perfil."); return; }
+    setProfileSaving(true);
+    try {
+      const avatarUrl = profilePhoto ? await uploadProfilePhoto(profilePhoto) : profile?.avatar_url ?? null;
+      const updated = await updateMyProfile({ full_name: fullName, avatar_url: avatarUrl });
+      setProfile(updated); setProfilePhoto(null); setProfileOpen(false);
+      showNotice("Perfil atualizado.");
+    } catch (error) {
+      showNotice(error instanceof Error ? error.message : "Não foi possível salvar o perfil.");
+    } finally { setProfileSaving(false); }
+  }
 
   function showNotice(message: string) {
     setNotice(message);
@@ -138,9 +154,10 @@ export default function ManagementPage() {
         <header className="management-topbar">
           <label><span className="sr-only">Buscar</span><input placeholder="Buscar saídas, clientes, reservas..." /></label>
           <button className="icon-button" aria-label="Notificações" onClick={() => showNotice("Você tem 3 pendências para hoje.")}><Bell aria-hidden="true" /><i /></button>
-          <button className="current-user" onClick={() => { signOut(); window.location.assign("/gestao/login"); }} title="Sair da gestão"><span>{currentUser.initials}</span><p><strong>{currentUser.name}</strong><small>{userEmail ?? "Ambiente de demonstração"}</small></p><ChevronDown aria-hidden="true" /></button>
+          <button className="current-user" onClick={() => { setProfileName(currentUser.name); setProfilePhoto(null); setProfileOpen(true); }} title="Editar meu perfil"><span>{currentUser.avatarUrl ? <img src={currentUser.avatarUrl} alt="" /> : currentUser.initials}</span><p><strong>{currentUser.name}</strong><small>{userEmail ?? "Ambiente de demonstração"}</small></p><ChevronDown aria-hidden="true" /></button>
         </header>
 
+<>{profileOpen && <div className="profile-backdrop" role="presentation"><section className="profile-dialog" role="dialog" aria-modal="true" aria-labelledby="profile-title"><button className="profile-close" onClick={() => setProfileOpen(false)} aria-label="Fechar">×</button><p className="module-eyebrow">Meu perfil</p><h2 id="profile-title">Seus dados na gestão</h2><p>Atualize como a equipe identifica você no sistema.</p><form onSubmit={saveProfile}><label className="profile-photo-picker"><span>{currentUser.avatarUrl ? <img src={currentUser.avatarUrl} alt="" /> : currentUser.initials}</span><b>{profilePhoto ? "Nova foto selecionada" : "Escolher foto"}</b><input type="file" accept="image/png,image/jpeg,image/webp" onChange={(event) => setProfilePhoto(event.target.files?.[0] ?? null)} /></label><label>Nome completo<input value={profileName} onChange={(event) => setProfileName(event.target.value)} required /></label><label>E-mail<input value={userEmail ?? ""} readOnly /></label><div className="profile-actions"><button type="button" onClick={() => { signOut(); window.location.assign("/gestao/login"); }}>Sair da gestão</button><button type="submit" disabled={profileSaving}>{profileSaving ? "Salvando…" : "Salvar perfil"}</button></div></form></section></div>}</>
         <div className="management-page">
           {activeModule === "Clientes" ? <ClientsModule clients={clients} loading={clientsLoading} onAction={showNotice} onDeleted={async () => { const [nextClients, nextReservations, nextPayments] = await Promise.all([listClients(), listReservations(), listPayments()]); setClients(nextClients); setReservations(nextReservations); setPayments(nextPayments); }} /> : activeModule === "Documentos" ? <DocumentsModule clients={clients} loading={clientsLoading} /> : activeModule === "Financeiro" ? <FinanceModule payments={payments} departures={departures} onAction={showNotice} onUpdated={async () => setPayments(await listPayments())} /> : activeModule === "Operações" ? <OperationsModule departures={departures} selectedDepartureId={selectedDepartureId} onSelectDeparture={setSelectedDepartureId} costs={departureCosts} onAction={showNotice} onUpdated={async (departureId) => setDepartureCosts(await listDepartureCosts(departureId))} onSettingsUpdated={async () => setDepartures(await listDepartures())} /> : activeModule === "Relatórios" ? <ReportsModule clients={clients} payments={payments} /> : activeModule === "Comunicação" ? <CommunicationModule clients={clients} logs={contactLogs} departures={departures} onAction={showNotice} onLogged={async () => setContactLogs(await listContactLogs())} /> : activeModule !== "Saídas" ? <ModulePage module={modules[activeModule]} onAction={showNotice} /> : <>
           <section className="departure-catalog" aria-label="Saídas cadastradas"><div><p className="module-eyebrow">SAÍDAS OPERACIONAIS</p><h2>Escolha uma saída para gerir</h2><p>Inscrições, reservas, pagamentos e acomodação ficam separados por roteiro.</p></div><div className="departure-cards">{departures.map((departure) => <button key={departure.id} className={selectedDeparture?.id === departure.id ? "selected" : ""} onClick={() => setSelectedDepartureId(departure.id)}><small>{departure.trips?.category ?? "Roteiro"} · {departure.currency}</small><strong>{departure.trips?.title ?? "Saída"}</strong><span>{formatDate(departure.starts_on)} · {departure.capacity} vagas</span><em>{departure.public_registration_enabled ? "Inscrições abertas" : "Em preparação"}</em></button>)}</div>{!departures.length && <div className="empty-records"><strong>Nenhuma saída cadastrada ainda.</strong><p>As saídas operacionais aparecerão aqui assim que forem criadas.</p></div>}</section>
