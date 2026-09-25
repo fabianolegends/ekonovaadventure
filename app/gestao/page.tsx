@@ -50,7 +50,12 @@ export default function ManagementPage() {
   const [activeModule, setActiveModule] = useState<keyof typeof modules>("Saídas");
   const [notice, setNotice] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
-  const [userEmail, setUserEmail] = useState<string | null>(null);\n  const [profile, setProfile] = useState<TeamMemberRecord | null>(null);\n  const [profileOpen, setProfileOpen] = useState(false);\n  const [profileName, setProfileName] = useState("");\n  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);\n  const [profileSaving, setProfileSaving] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [profile, setProfile] = useState<TeamMemberRecord | null>(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
+  const [profileSaving, setProfileSaving] = useState(false);
   const [clients, setClients] = useState<ClientRecord[]>([]);
   const [clientsLoading, setClientsLoading] = useState(false);
   const [payments, setPayments] = useState<PaymentRecord[]>([]);
