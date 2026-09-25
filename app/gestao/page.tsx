@@ -1,5 +1,6 @@
 "use client";
 
+// Atualização de publicação: perfil administrativo.
 import {
   Bell,
   CalendarDays,
