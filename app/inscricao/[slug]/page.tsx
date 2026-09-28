@@ -17,6 +17,11 @@ const shareData = {
     description: "Trekking, altitude e vinhos nos Andes.",
     image: "/images/inscricao/andes-essencial.jpg",
   },
+  "trekking-atacama-essencia-2027": {
+    title: "Trekking Atacama na sua Essência 2027",
+    description: "Nove dias de trekking, cultura andina e paisagens únicas no norte do Chile.",
+    image: "/images/inscricao/trekking-atacama-essencia-2027.jpg",
+  },
 } as const;
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
