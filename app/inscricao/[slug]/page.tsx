@@ -20,7 +20,7 @@ const shareData = {
   "trekking-atacama-essencia-2027": {
     title: "Trekking Atacama na sua Essência 2027",
     description: "Nove dias de trekking, cultura andina e paisagens únicas no norte do Chile.",
-    image: "/images/inscricao/trekking-atacama-essencia-2027.jpg",
+    image: "/images/inscricao/trekking-atacama-essencia-2027.jpg?v=20260928",
   },
 } as const;
 
