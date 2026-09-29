@@ -155,15 +155,14 @@ export async function uploadProfilePhoto(file: File) {
   const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) throw new Error("Escolha uma imagem de até 5 MB.");
-  const extension = file.type === "image/png" ? "png" : file.type === "image/webp" ? "webp" : "jpg";
-  const path = `${session.user.id}/perfil.${extension}`;
-  const response = await fetch(endpoint(`/storage/v1/object/team-avatars/${path}`), {
+  const response = await fetch("/api/gestao/perfil/foto", {
     method: "POST",
-    headers: { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": file.type, "x-upsert": "true" },
+    headers: { Authorization: `Bearer ${session.access_token}`, "Content-Type": file.type },
     body: file,
   });
-  if (!response.ok) throw new Error("Não foi possível enviar a foto agora.");
-  return endpoint(`/storage/v1/object/public/team-avatars/${path}?v=${Date.now()}`);
+  const payload = await response.json() as { avatarUrl?: string; error?: string };
+  if (!response.ok || !payload.avatarUrl) throw new Error(payload.error ?? "Não foi possível enviar a foto agora.");
+  return payload.avatarUrl;
 }
 
 async function getValidClientSession(): Promise<Session | null> {
