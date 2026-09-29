@@ -72,7 +72,7 @@ export default function ManagementPage() {
     const session = getSession();
     if (!session) { window.location.replace("/gestao/login"); return; }
     setUserEmail(session.user.email ?? null);
-    setCheckingAccess(false);
+    getMyProfile().then(setProfile).catch(() => setProfile(null)).finally(() => setCheckingAccess(false));
   }, []);
 
   useEffect(() => {
