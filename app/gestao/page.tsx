@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import financeStyles from "./finance.module.css";
-import { assignReservationToRoom, createClient, createContactLog, createDepartureCost, createRoomGroup, deleteClientWithReservations, deleteReservation, getSession, listClients, listContactLogs, listDepartureCosts, listDepartures, listPayments, listReservations, listRoomGroups, markPaymentAsPaid, replacePendingPaymentPlan, signOut, supabaseConfigured, updateClient, updateDepartureCapacity, updateDepartureCostActual, updateDepartureCostSettings, getMyProfile, updateMyProfile, uploadProfilePhoto, type ClientRecord, type ContactLogRecord, type DepartureCostRecord, type DepartureRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord, type TeamMemberRecord } from "../../lib/supabase-browser";
+import { assignReservationToRoom, createClient, createContactLog, createDepartureCost, createRoomGroup, deleteClientWithReservations, deleteReservation, getSession, listClients, listContactLogs, listDepartureCosts, listDepartures, listPayments, listReservations, listRoomGroups, markPaymentAsPaid, replacePendingPaymentPlan, resetTeamMemberPassword, signOut, supabaseConfigured, updateClient, updateDepartureCapacity, updateDepartureCostActual, updateDepartureCostSettings, getMyProfile, updateMyProfile, uploadProfilePhoto, type ClientRecord, type ContactLogRecord, type DepartureCostRecord, type DepartureRecord, type PaymentRecord, type ReservationRecord, type RoomGroupRecord, type TeamMemberRecord } from "../../lib/supabase-browser";
 
 void financeStyles;
 
@@ -51,6 +51,7 @@ export default function ManagementPage() {
   const [notice, setNotice] = useState<string | null>(null);
   const [checkingAccess, setCheckingAccess] = useState(true);
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [showPasswordPanel, setShowPasswordPanel] = useState(false);
   const [profile, setProfile] = useState<TeamMemberRecord | null>(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const [profileName, setProfileName] = useState("");
@@ -150,7 +151,7 @@ export default function ManagementPage() {
           {navItems.map(([Icon, label]) => <button className={activeModule === label ? "active" : ""} key={label} onClick={() => setActiveModule(label as keyof typeof modules)}><Icon aria-hidden="true" />{label}</button>)}
         </nav>
         <div className="management-side-bottom">
-          <button onClick={() => showNotice("Configurações: em breve.")}><Settings aria-hidden="true" />Configurações</button>
+          <button onClick={() => setShowPasswordPanel(true)}><Settings aria-hidden="true" />Configurações</button>
           <button onClick={() => showNotice("Central de ajuda: em breve.")}><CircleHelp aria-hidden="true" />Ajuda</button>
           <p>Mais natureza.<br />Melhores pessoas.</p>
         </div>
@@ -218,9 +219,41 @@ export default function ManagementPage() {
         </div>
       </section>
       {!supabaseConfigured && <div className="management-demo-note">Modo de demonstração — conecte o Supabase para ativar acesso e dados reais.</div>}
+      {showPasswordPanel && <AdminPasswordPanel onClose={() => setShowPasswordPanel(false)} onAction={showNotice} />}
       {notice && <div className="management-toast" role="status">{notice}<button aria-label="Fechar" onClick={() => setNotice(null)}><X aria-hidden="true" /></button></div>}
     </main>
   );
+}
+
+
+function AdminPasswordPanel({ onClose, onAction }: { onClose: () => void; onAction: (message: string) => void }) {
+  const [email, setEmail] = useState("cristiane@ekonovaadv.com.br");
+  const [password, setPassword] = useState("");
+  const [confirmation, setConfirmation] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function submit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (password.length < 10) { onAction("A nova senha deve ter ao menos 10 caracteres."); return; }
+    if (password !== confirmation) { onAction("As senhas informadas não conferem."); return; }
+    setBusy(true);
+    try {
+      await resetTeamMemberPassword(email, password);
+      setPassword(""); setConfirmation(""); onAction(`Senha atualizada para ${email}.`); onClose();
+    } catch (error) {
+      onAction(error instanceof Error ? error.message : "Não foi possível atualizar a senha.");
+    } finally { setBusy(false); }
+  }
+
+  return <div className="admin-password-overlay" role="dialog" aria-modal="true" aria-labelledby="admin-password-title">
+    <form className="admin-password-panel" onSubmit={submit}>
+      <div><p className="module-eyebrow">ACESSO DA EQUIPE</p><h2 id="admin-password-title">Alterar senha</h2><p>Disponível apenas para administradores. A pessoa usará a nova senha no próximo acesso.</p></div>
+      <label>E-mail da equipe<input type="email" value={email} onChange={(event) => setEmail(event.target.value)} required /></label>
+      <label>Nova senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} autoComplete="new-password" minLength={10} required /></label>
+      <label>Confirme a nova senha<input type="password" value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="new-password" minLength={10} required /></label>
+      <div className="admin-password-actions"><button type="button" onClick={onClose} disabled={busy}>Cancelar</button><button type="submit" disabled={busy}>{busy ? "Salvando…" : "Atualizar senha"}</button></div>
+    </form>
+  </div>;
 }
 
 function ModulePage({ module, onAction }: { module: typeof modules[keyof typeof modules]; onAction: (message: string) => void }) {
