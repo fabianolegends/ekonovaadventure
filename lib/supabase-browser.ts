@@ -115,6 +115,17 @@ export async function updatePassword(accessToken: string, password: string) {
   return payload;
 }
 
+export async function resetTeamMemberPassword(email: string, password: string) {
+  const session = await getValidSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch("/api/gestao/equipe/senha", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.access_token}` },
+    body: JSON.stringify({ email, password }),
+  });
+  const payload = await response.json() as { error?: string };
+  if (!response.ok) throw new Error(payload.error ?? "Não foi possível atualizar a senha.");
+}
 
 export async function getMyProfile() {
   const session = await getValidSession();
