@@ -15,8 +15,13 @@ const ROUTES = {
 
 export default function InscricaoPage() {
   const pathname = usePathname();
-  const slug = pathname.split("/").filter(Boolean).at(-1) || "andes-essencial";
-  const route = ROUTES[slug as keyof typeof ROUTES] ?? ROUTES["andes-essencial"];
+  const pathSlug = pathname.split("/").filter(Boolean).at(-1) || "andes-essencial";
+  // A página /inscricao é a porta de entrada histórica do Andes. O nome da
+  // rota não é um slug de viagem e, antes, era enviado ao servidor como se
+  // fosse. Isso fazia um cadastro completo terminar com a mensagem genérica
+  // de dados incompletos.
+  const slug = (pathSlug in ROUTES ? pathSlug : "andes-essencial") as keyof typeof ROUTES;
+  const route = ROUTES[slug];
   const formatMoney = (value: number) => new Intl.NumberFormat(route.locale, { style: "currency", currency: route.currency, minimumFractionDigits: 2 }).format(value);
   const [room, setRoom] = useState<"duplo" | "single">("duplo");
   const [payment, setPayment] = useState<"pix" | "avista">("pix");
