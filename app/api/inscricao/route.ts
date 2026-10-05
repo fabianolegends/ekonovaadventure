@@ -28,9 +28,11 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "O link desta viagem não é válido. Volte à página da viagem e abra a inscrição novamente.", fields: ["link da viagem"] }, { status: 400 });
   }
 
+  const name = booking.name?.trim() ?? "";
+  const email = booking.email?.trim() ?? "";
   const missingFields = [
-    !booking.name?.trim() ? "nome completo" : null,
-    !booking.email?.trim() ? "e-mail" : null,
+    !name ? "nome completo" : null,
+    !email ? "e-mail" : null,
     !Number.isFinite(total) || total <= 0 ? "valor da reserva" : null,
   ].filter((field): field is string => Boolean(field));
   if (missingFields.length) {
@@ -71,14 +73,14 @@ export async function POST(request: Request) {
 
     const profile = booking.profile || {};
     const clientData = {
-      full_name: booking.name, email: booking.email, phone: profile.phone || null, city: profile.city || null,
+      full_name: name, email, phone: profile.phone || null, city: profile.city || null,
       source: "inscricao_publica", whatsapp_opt_in: true,
       cpf: profile.cpf || null, rg: profile.rg || null, passport_number: profile.passport || null,
       street: profile.street || null, neighborhood: profile.neighborhood || null, postal_code: profile.postalCode || null,
       emergency_contact_name: profile.emergencyName || null, emergency_contact_phone: profile.emergencyPhone || null,
       health_plan: profile.healthPlan || null, health_plan_phone: profile.healthPhone || null,
     };
-    const clientRows = await rest(`clients?email=eq.${encodeURIComponent(booking.email)}&select=id`);
+    const clientRows = await rest(`clients?email=eq.${encodeURIComponent(email)}&select=id`);
     const client = clientRows[0]
       ? (await rest(`clients?id=eq.${clientRows[0].id}`, { method: "PATCH", body: JSON.stringify(clientData) }))[0]
       : (await rest("clients", { method: "POST", body: JSON.stringify(clientData) }))[0];
