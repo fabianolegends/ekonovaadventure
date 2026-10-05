@@ -24,8 +24,20 @@ export async function POST(request: Request) {
   const booking = await request.json() as BookingPayload;
   const route = ROUTES[booking.slug as keyof typeof ROUTES];
   const total = booking.total ?? 0;
-  if (!route || !booking.email || !booking.name || !Number.isFinite(total)) {
-    return NextResponse.json({ error: "Dados de inscrição incompletos." }, { status: 400 });
+  if (!route) {
+    return NextResponse.json({ error: "O link desta viagem não é válido. Volte à página da viagem e abra a inscrição novamente.", fields: ["link da viagem"] }, { status: 400 });
+  }
+
+  const missingFields = [
+    !booking.name?.trim() ? "nome completo" : null,
+    !booking.email?.trim() ? "e-mail" : null,
+    !Number.isFinite(total) || total <= 0 ? "valor da reserva" : null,
+  ].filter((field): field is string => Boolean(field));
+  if (missingFields.length) {
+    return NextResponse.json({
+      error: `Revise o cadastro: ${missingFields.join(", ")}.`,
+      fields: missingFields,
+    }, { status: 400 });
   }
   if (booking.payment === "pix") {
     if (!booking.entryDate) return NextResponse.json({ error: "Escolha a data da entrada." }, { status: 400 });
