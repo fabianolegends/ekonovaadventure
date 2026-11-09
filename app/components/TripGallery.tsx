@@ -25,7 +25,7 @@ export function TripGallery({ images, title }: { images: Array<string | TripGall
 
           return (
             <figure key={item.src}>
-              <Image src={item.src} alt={item.alt} fill sizes="(max-width: 760px) 84vw, 760px" />
+              <Image src={item.src} alt={item.alt} fill sizes="(max-width: 760px) 84vw, 760px" unoptimized />
               {typeof image !== "string" && (
                 <figcaption>
                   <strong>{image.caption}</strong>
