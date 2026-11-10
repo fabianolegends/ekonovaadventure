@@ -11,7 +11,7 @@ export function SiteFooter() {
         <p className="footer-label">Experiências</p>
         <Link href="/hiking">Hiking 50+ · Caminhadas</Link>
         <Link href="/bike">Bike com autonavegação</Link>
-        <Link href="/#saidas">Próximas saídas</Link>
+        <Link href="/#saidas">Inscrições abertas</Link>
       </div>
       <div>
         <p className="footer-label">Ekonova</p>

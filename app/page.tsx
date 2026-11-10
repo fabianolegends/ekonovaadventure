@@ -28,7 +28,7 @@ export default function Home() {
           <h1>Viva a aventura no seu ritmo.</h1>
           <p className="hero-lede">Pequenos grupos, caminhos autênticos e suporte especializado para viver a natureza com autonomia e segurança.</p>
           <div className="hero-actions">
-            <a className="button button-primary" href="#saidas">Ver próximas saídas <Arrow /></a>
+            <a className="button button-primary" href="#saidas">Ver inscrições abertas <Arrow /></a>
             <a className="button button-secondary" href="/sobre">Conheça a Ekonova</a>
           </div>
           <div className="trust-row" aria-label="Diferenciais Ekonova">
@@ -65,8 +65,8 @@ export default function Home() {
 
       <section className="section-shell departures-section" id="saidas">
         <div className="section-heading split-heading">
-          <div><p className="eyebrow">Próximas saídas</p><h2>Próximas aventuras. Escolha a sua.</h2></div>
-          <p>Confira as datas confirmadas, acompanhe os grupos em formação e converse com a equipe para encontrar a experiência que combina com você.</p>
+          <div><p className="eyebrow">Inscrições abertas · 2027</p><h2>Escolha sua próxima aventura.</h2></div>
+          <p>Todos os roteiros com data confirmada para 2027 estão aqui. Confira os detalhes e faça sua inscrição pelo site ou diretamente com a equipe.</p>
         </div>
         <div className="featured-grid">{featuredTrips.map((trip) => <TripCard key={trip.slug} trip={trip} />)}</div>
       </section>
