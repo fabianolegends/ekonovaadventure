@@ -36,12 +36,14 @@ export function TripPage({ trip }: { trip: Trip }) {
         <div className="trip-hero-image"><img src={trip.image} alt={`Paisagem de ${trip.title}`} /></div>
         <div className="trip-hero-copy">
           <p className="eyebrow">{trip.kind === "trekking" ? "Hiking 50+ · Caminhadas" : "Expedições de cicloturismo"}</p>
-          <span className={`trip-status ${statusClass[trip.status]}`}>{trip.status}</span>
+          <span className={`trip-status ${statusClass[trip.status]}`}>{trip.registrationHref ? "Inscrições abertas" : trip.status}</span>
           <h1>{trip.title}</h1>
           <p>{trip.summary}</p>
           <div className="trip-hero-actions">
             <a className="button button-primary" href="#programa">Ver programa <Arrow /></a>
-            <a className="trip-hero-link" href={whatsapp}>Consultar disponibilidade</a>
+            <a className="trip-hero-link" href={trip.registrationHref ?? whatsapp}>
+              {trip.registrationHref ? "Fazer inscrição" : "Consultar disponibilidade"}
+            </a>
           </div>
           <RouteLine />
         </div>
