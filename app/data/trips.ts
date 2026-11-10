@@ -206,6 +206,46 @@ export const trips: Trip[] = [
     gallery: ["/images/gallery/equador/001.jpg", "/images/gallery/equador/002.jpg", "/images/gallery/equador/003.jpg", "/images/gallery/equador/004.jpg", "/images/gallery/equador/005.jpg", "/images/gallery/equador/006.jpg"],
   },
   {
+    slug: "biketour-das-serras",
+    title: "Biketour das Serras",
+    place: "Aparados da Serra, RS e SC",
+    kind: "bike",
+    status: "Saída programada",
+    date: "17 a 23 de abril de 2027",
+    duration: "7 dias · 6 dias de pedal",
+    distance: "455 km · 6.920 m+",
+    image: "/images/rota-biketour-das-serras.webp",
+    summary: "Uma travessia pelos cânions e Campos de Cima da Serra, conectando Cambará do Sul, Praia Grande, São José dos Ausentes, Bom Jesus e Jaquirana.",
+    href: "/roteiros/biketour-das-serras",
+    registrationHref: "https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20me%20inscrever%20no%20Biketour%20das%20Serras%202027.",
+    highlights: ["Cânion Itaimbezinho e Serra do Faxinal", "Serra da Rocinha e Fazenda Aparados da Serra", "Campos de Cima da Serra", "Cachoeirão dos Rodrigues"],
+    included: ["6 noites em pousadas, em quartos duplos", "6 cafés da manhã e 5 jantares previstos no programa", "Veículo de apoio para transporte das bagagens e assistência quando necessário", "Assistência, logística e atendimento durante toda a estadia", "6 dias de pedal", "Tracks GPX para navegação", "Rastreador SPOT via satélite", "Guia Cadastur Brasil e América do Sul, com treinamento em medicina avançada em áreas remotas pela WMA International"],
+    notIncluded: ["Deslocamento até Cambará do Sul e retorno após o encerramento", "Almoços, lanches, bebidas e refeições não especificadas como incluídas", "Bicicleta e equipamentos pessoais", "Despesas pessoais e serviços extras", "Responsabilidades e despesas decorrentes de acidentes", "Suplemento de R$ 600 para hospedagem individual"],
+    practical: [
+      { label: "Formato", value: "Grupo pequeno · até 12 participantes" },
+      { label: "Hospedagem", value: "6 noites em pousadas" },
+      { label: "Terreno", value: "Estradas rurais, cascalho, campos e serras" },
+      { label: "Investimento", value: "R$ 3.199 por pessoa em quarto duplo" },
+    ],
+    profile: { effort: 5, technique: 3, exposure: 4, comfort: 3 },
+    note: "Expedição longa e exigente, com seis dias consecutivos de pedal, 455 km e aproximadamente 6.920 metros de subida acumulada. Requer experiência em percursos de longa duração e preparo físico compatível.",
+    editorial: {
+      kicker: "Cânions, campos de altitude e estradas serranas",
+      title: "Uma travessia entre duas serras e paisagens monumentais.",
+      paragraphs: ["Cambará do Sul abre uma jornada que contorna os grandes cânions do Sul do Brasil, desce até Praia Grande e retorna aos Campos de Cima da Serra pela Serra da Rocinha. A paisagem muda todos os dias: escarpas, mata nativa, vales, rios e campos de altitude.", "O trajeto conecta pequenas cidades e áreas rurais pouco exploradas. Veículo de apoio, transporte de bagagens, navegação por GPX e rastreamento via satélite formam a rede de suporte ao longo dos 455 quilômetros."],
+    },
+    stages: [
+      { title: "Recepção em Cambará do Sul", meta: "1º dia · 17/04 · chegada e boas-vindas", description: "Encontro do grupo, acomodação e jantar de recepção no Galpão Costaneira para alinhamento da expedição." },
+      { title: "Cambará do Sul a Praia Grande", meta: "2º dia · 63 km · 610 m+", description: "Passagem pelo Parque Nacional de Aparados da Serra e Cânion Itaimbezinho, seguida da descida da Serra do Faxinal até Praia Grande." },
+      { title: "Praia Grande a Timbé do Sul", meta: "3º dia · 82,2 km · 1.130 m+", description: "Pedal com os cânions como cenário, avançando pelas estradas rurais até o sopé da Serra da Rocinha." },
+      { title: "Timbé do Sul a São José dos Ausentes", meta: "4º dia · 74 km · 1.880 m+", description: "A etapa mais intensa sobe por vales, mata nativa e campos de altitude até a Fazenda Aparados da Serra." },
+      { title: "São José dos Ausentes a Bom Jesus", meta: "5º dia · 89,2 km · 1.160 m+", description: "Percurso inédito por estradas rurais estreitas, campos abertos, fazendas centenárias e longas descidas técnicas." },
+      { title: "Bom Jesus a Jaquirana", meta: "6º dia · 69,4 km · 880 m+", description: "Travessia dos Campos de Cima da Serra por rios, comunidades rurais e matas preservadas, com chegada à Pousada Colibri e assado serrano." },
+      { title: "Jaquirana a Cambará do Sul", meta: "7º dia · 78 km · 1.260 m+", description: "Etapa final por estradas rurais e araucárias, passando pelo Cachoeirão dos Rodrigues antes do retorno a Cambará do Sul." },
+    ],
+    gallery: ["/images/gallery/biketour-das-serras/01.webp", "/images/gallery/biketour-das-serras/02.webp", "/images/gallery/biketour-das-serras/03.webp", "/images/gallery/biketour-das-serras/04.webp", "/images/gallery/biketour-das-serras/05.webp", "/images/gallery/biketour-das-serras/06.webp", "/images/gallery/biketour-das-serras/07.webp"],
+  },
+  {
     slug: "biketour-caminhos-do-ouro",
     title: "Biketour Caminhos do Ouro",
     place: "Ouro Preto e região, Minas Gerais",
@@ -776,7 +816,7 @@ export const trips: Trip[] = [
   },
 ];
 
-const featuredTripSlugs = ["andes-essencial", "biketour-caminhos-do-ouro", "caminhos-do-ouro", "equador", "atacama-essencia"];
+const featuredTripSlugs = ["andes-essencial", "biketour-das-serras", "biketour-caminhos-do-ouro", "caminhos-do-ouro", "equador", "atacama-essencia"];
 
 export const featuredTrips = featuredTripSlugs
   .map((slug) => trips.find((trip) => trip.slug === slug))
