@@ -56,22 +56,6 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="journey-divider" aria-hidden="true">
-        <div className="journey-contours journey-contours-left" />
-        <div className="journey-contours journey-contours-right" />
-        <div className="journey-copy">
-          <span>Hiking</span>
-          <strong>Do primeiro passo<br />à próxima estrada</strong>
-          <span>Cicloturismo</span>
-        </div>
-        <svg className="journey-route" viewBox="0 0 1440 180" preserveAspectRatio="none">
-          <path className="journey-route-shadow" d="M-30 128C110 150 186 54 330 82c148 29 180 82 330 52 141-28 191-112 340-81 143 30 216 123 470 47" />
-          <path className="journey-route-line" d="M-30 128C110 150 186 54 330 82c148 29 180 82 330 52 141-28 191-112 340-81 143 30 216 123 470 47" />
-        </svg>
-        <div className="journey-waypoints"><i /><i /><i /><i /><i /></div>
-        <span className="journey-pulse"><i /></span>
-      </div>
-
       <section className="section-shell departures-section" id="saidas">
         <div className="section-heading split-heading">
           <div><p className="eyebrow">Inscrições abertas · 2027</p><h2>Escolha sua próxima aventura.</h2></div>
