@@ -585,20 +585,31 @@ h1, h2 { font-weight: 750; letter-spacing: -.045em; }
 .section-shell { padding-top: 94px; padding-bottom: 94px; }
 .departures-section { padding-top: 47px; }
 .profile-method { padding-top: 56px; }
-.moving-trail-divider { height: 124px; max-width: 1456px; margin: 0 auto; position: relative; overflow: hidden; color: #078a6d; }
-.trail-caption { position: absolute; top: 15px; left: 50%; transform: translateX(-50%); color: #78938b; font-size: 9px; font-weight: 800; letter-spacing: .18em; text-transform: uppercase; white-space: nowrap; }
-.trail-line { position: absolute; left: 4%; right: 4%; top: 76px; height: 1px; background: repeating-linear-gradient(90deg, rgba(7,138,109,.48) 0 7px, transparent 7px 14px); }
-.trail-line::before, .trail-line::after, .trail-line i { content: ""; position: absolute; top: 50%; width: 7px; height: 7px; transform: translate(-50%,-50%); border: 1px solid #079b79; border-radius: 50%; background: white; }
-.trail-line::before { left: 0; }
-.trail-line::after { left: 100%; }
-.trail-line i:nth-child(1) { left: 25%; }
-.trail-line i:nth-child(2) { left: 50%; }
-.trail-line i:nth-child(3) { left: 75%; }
-.moving-hiker, .moving-cyclist { position: absolute; top: 29px; left: -110px; display: grid; place-items: center; will-change: transform; }
-.moving-hiker img, .moving-cyclist img { width: 84px; height: 84px; object-fit: contain; filter: brightness(0) saturate(100%) invert(38%) sepia(53%) saturate(1061%) hue-rotate(117deg) brightness(91%) contrast(94%) drop-shadow(0 4px 5px rgba(4,61,52,.14)); }
-.moving-hiker { animation: travel-right 16s linear infinite; }
-.moving-cyclist { animation: travel-right 10s linear 2.5s infinite; }
-@keyframes travel-right { from { transform: translateX(0); } to { transform: translateX(calc(100vw + 220px)); } }
+.journey-divider { height: 188px; max-width: 1456px; margin: 0 auto; position: relative; overflow: hidden; color: #078a6d; isolation: isolate; }
+.journey-divider::before { content: ""; position: absolute; inset: 22px 4% 18px; border: 1px solid rgba(7,138,109,.12); border-radius: 100%; transform: scaleY(.58); }
+.journey-copy { position: absolute; inset: 0 7%; z-index: 3; display: flex; align-items: center; justify-content: space-between; pointer-events: none; }
+.journey-copy span { color: #078a6d; font-size: 9px; font-weight: 850; letter-spacing: .2em; text-transform: uppercase; }
+.journey-copy strong { margin-top: -7px; color: #476d64; font-size: 10px; line-height: 1.5; font-weight: 800; letter-spacing: .18em; text-align: center; text-transform: uppercase; }
+.journey-route { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.journey-route path { fill: none; vector-effect: non-scaling-stroke; }
+.journey-route-shadow { stroke: rgba(7,138,109,.08); stroke-width: 9; stroke-linecap: round; }
+.journey-route-line { stroke: rgba(7,138,109,.55); stroke-width: 1.4; stroke-linecap: round; stroke-dasharray: 3 8; animation: route-flow 8s linear infinite; }
+.journey-waypoints { position: absolute; inset: 0 5%; z-index: 2; }
+.journey-waypoints i { position: absolute; width: 10px; height: 10px; border: 1px solid rgba(7,138,109,.65); border-radius: 50%; background: #fff; box-shadow: 0 0 0 5px rgba(255,255,255,.8); }
+.journey-waypoints i:nth-child(1) { left: 3%; top: 126px; }
+.journey-waypoints i:nth-child(2) { left: 24%; top: 73px; }
+.journey-waypoints i:nth-child(3) { left: 47%; top: 126px; }
+.journey-waypoints i:nth-child(4) { left: 69%; top: 47px; }
+.journey-waypoints i:nth-child(5) { left: 94%; top: 104px; }
+.journey-pulse { position: absolute; z-index: 4; left: -24px; top: 118px; width: 18px; height: 18px; display: grid; place-items: center; border-radius: 50%; background: #fff; box-shadow: 0 6px 20px rgba(5,69,59,.22); offset-path: path("M -30 128 C 110 150 186 54 330 82 C 478 111 510 164 660 134 C 801 106 851 22 1000 53 C 1143 83 1216 176 1470 100"); offset-rotate: 0deg; animation: journey-progress 9s cubic-bezier(.45,0,.55,1) infinite; }
+.journey-pulse::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: #13c59a; box-shadow: 0 0 0 5px rgba(19,197,154,.16); }
+.journey-pulse i { position: absolute; inset: -8px; border: 1px solid rgba(19,197,154,.24); border-radius: 50%; animation: journey-ripple 2s ease-out infinite; }
+.journey-contours { position: absolute; z-index: -1; width: 300px; height: 150px; opacity: .2; background: repeating-radial-gradient(ellipse at center, transparent 0 13px, rgba(7,138,109,.23) 14px 15px, transparent 16px 25px); }
+.journey-contours-left { left: -72px; bottom: -72px; transform: rotate(-9deg); }
+.journey-contours-right { right: -75px; top: -65px; transform: rotate(13deg); }
+@keyframes route-flow { to { stroke-dashoffset: -88; } }
+@keyframes journey-progress { 0% { offset-distance: 0%; opacity: 0; } 5% { opacity: 1; } 94% { opacity: 1; } 100% { offset-distance: 100%; opacity: 0; } }
+@keyframes journey-ripple { 0% { transform: scale(.5); opacity: .8; } 100% { transform: scale(1.5); opacity: 0; } }
 .section-heading h2, .method-copy h2, .about-copy h2, .included-section h2,
 .cta-band h2, .detail-copy h2, .story-grid h2 { font-weight: 750; }
 .split-heading > p, .centered-heading > p { font-size: 16px; }
@@ -767,11 +778,12 @@ h1, h2 { font-weight: 750; letter-spacing: -.045em; }
   .home-testimonials-heading { align-items: flex-start; }
   .departures-section { padding-top: 38px; }
   .profile-method { padding-top: 30px; }
-  .moving-trail-divider { height: 100px; margin: 0 20px; }
-  .trail-line { top: 64px; left: 2%; right: 2%; }
-  .moving-hiker, .moving-cyclist { top: 25px; left: -78px; }
-  .moving-hiker img, .moving-cyclist img { width: 68px; height: 68px; }
-  .trail-caption { top: 8px; }
+  .journey-divider { height: 150px; margin: 0 20px; }
+  .journey-copy { inset: 0 4%; }
+  .journey-copy strong { font-size: 8px; }
+  .journey-copy span { font-size: 8px; letter-spacing: .14em; }
+  .journey-route { height: 150px; }
+  .journey-waypoints { display: none; }
 }
 
 @media (max-width: 520px) {
@@ -844,9 +856,8 @@ h1, h2 { font-weight: 750; letter-spacing: -.045em; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .moving-hiker, .moving-cyclist { animation: none; }
-  .moving-hiker { left: 24%; }
-  .moving-cyclist { left: 65%; }
+  .journey-route-line, .journey-pulse, .journey-pulse i { animation: none; }
+  .journey-pulse { display: none; }
 }
 
 
