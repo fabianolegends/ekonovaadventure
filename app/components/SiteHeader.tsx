@@ -49,8 +49,8 @@ function SocialLinks({ mobile = false }: { mobile?: boolean }) {
 export function SiteHeader({ overlay = true }: { overlay?: boolean }) {
   return (
     <header className={`site-header${overlay ? " site-header-overlay" : ""}`}>
-      <Link className="brand" href="/" aria-label="Ekonova Adventure — início">
-        <img src="/ekonova-logo.png" alt="Ekonova Adventure" />
+      <Link className="brand" href="/" aria-label="Ekonova Adventure® — início">
+        <img src="/ekonova-adventure-registrada.png" alt="Ekonova Adventure®" />
       </Link>
       <nav className="desktop-nav" aria-label="Navegação principal">
         <Link href="/">Home</Link>

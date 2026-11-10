@@ -4,7 +4,7 @@ export function SiteFooter() {
   return (
     <footer className="site-footer">
       <div className="footer-brand">
-        <img src="/ekonova-logo.png" alt="Ekonova Adventure" />
+        <img src="/ekonova-adventure-registrada.png" alt="Ekonova Adventure®" />
         <p>Turismo ativo para quem vive os 50+ com curiosidade, autonomia e segurança.</p>
       </div>
       <div>

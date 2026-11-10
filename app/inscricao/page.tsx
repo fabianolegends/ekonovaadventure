@@ -85,7 +85,7 @@ export default function InscricaoPage() {
 
   return (
     <main className="booking-shell">
-      <header><Link className="booking-logo" href="/"><Image src="/ekonova-logo.png" alt="Ekonova Adventure" width={204} height={75} priority /></Link><p>Inscrição de viagem</p></header>
+      <header><Link className="booking-logo" href="/"><Image src="/ekonova-adventure-registrada.png" alt="Ekonova Adventure®" width={531} height={188} priority /></Link><p>Inscrição de viagem</p></header>
       <section className="booking-hero">
         <p>{route.date.toUpperCase()} · {route.destination.toUpperCase()}</p>
         <h1>{route.hero}</h1>

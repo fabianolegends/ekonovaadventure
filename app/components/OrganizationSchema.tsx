@@ -7,7 +7,7 @@ export function OrganizationSchema() {
     "@id": `${BASE_URL}/#organization`,
     name: "Ekonova Adventure",
     url: BASE_URL,
-    logo: `${BASE_URL}/ekonova-logo.png`,
+    logo: `${BASE_URL}/ekonova-adventure-registrada.png`,
     image: `${BASE_URL}/images/clientes-trilha.jpeg`,
     description:
       "Turismo ativo 50+ em pequenos grupos, com experiências de hiking e expedições de cicloturismo no Brasil e na América do Sul.",

@@ -134,10 +134,10 @@ export default function MinhaAreaPage() {
 
   if (loading) return <main className="portal-shell"><p className="portal-loading">Carregando sua área…</p></main>;
 
-  if (recoveryToken) return <main className="portal-shell"><section className="portal-access"><Link className="portal-brand" href="/">EKONOVA <span>ADVENTURE</span></Link><p className="portal-eyebrow">NOVA SENHA</p><h1>Defina uma senha segura.</h1><p className="portal-intro">Use pelo menos 10 caracteres e não compartilhe esta senha.</p><form onSubmit={saveNewPassword} className="portal-access-form"><label>Nova senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={10} required /></label><label>Confirme a nova senha<input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={10} required /></label><button type="submit" disabled={busy}>{busy ? "Salvando…" : "Salvar nova senha"}</button></form>{message && <p className="portal-message">{message}</p>}</section></main>;
+  if (recoveryToken) return <main className="portal-shell"><section className="portal-access"><Link className="portal-brand" href="/">EKONOVA <span>ADVENTURE<sup>®</sup></span></Link><p className="portal-eyebrow">NOVA SENHA</p><h1>Defina uma senha segura.</h1><p className="portal-intro">Use pelo menos 10 caracteres e não compartilhe esta senha.</p><form onSubmit={saveNewPassword} className="portal-access-form"><label>Nova senha<input type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={10} required /></label><label>Confirme a nova senha<input type="password" value={confirmPassword} onChange={(event) => setConfirmPassword(event.target.value)} minLength={10} required /></label><button type="submit" disabled={busy}>{busy ? "Salvando…" : "Salvar nova senha"}</button></form>{message && <p className="portal-message">{message}</p>}</section></main>;
 
   if (!profile) return <main className="portal-shell"><section className="portal-access">
-    <Link className="portal-brand" href="/">EKONOVA <span>ADVENTURE</span></Link>
+    <Link className="portal-brand" href="/">EKONOVA <span>ADVENTURE<sup>®</sup></span></Link>
     <p className="portal-eyebrow">ÁREA DO VIAJANTE</p><h1>Seu acesso à viagem.</h1>
     <p className="portal-intro">Consulte pagamentos, documentos e mantenha seus dados de viagem atualizados.</p>
     <form onSubmit={submitAccess} className="portal-access-form">
@@ -155,7 +155,7 @@ export default function MinhaAreaPage() {
     <p className="portal-help">Use o mesmo e-mail informado na inscrição. A senha é pessoal e não é compartilhada com a equipe.</p>
   </section></main>;
 
-  return <main className="portal-dashboard"><header className="portal-header"><Link className="portal-brand" href="/">EKONOVA <span>ADVENTURE</span></Link><div><b>{profile.full_name}</b><span>{profile.email}</span></div><button className="portal-exit" onClick={() => { signOutClient(); setProfile(null); setDocuments([]); setMessage(""); }}>Sair</button></header>
+  return <main className="portal-dashboard"><header className="portal-header"><Link className="portal-brand" href="/">EKONOVA <span>ADVENTURE<sup>®</sup></span></Link><div><b>{profile.full_name}</b><span>{profile.email}</span></div><button className="portal-exit" onClick={() => { signOutClient(); setProfile(null); setDocuments([]); setMessage(""); }}>Sair</button></header>
     <section className="portal-hero"><p className="portal-eyebrow">ÁREA DO VIAJANTE</p><h1>Olá, {profile.full_name.split(" ")[0]}.</h1><p>Seu cadastro, documentos e situação da sua viagem em um só lugar.</p></section>
     <nav className="portal-tabs"><button className={tab === "cadastro" ? "active" : ""} onClick={() => setTab("cadastro")}>Meu cadastro</button><button className={tab === "pagamentos" ? "active" : ""} onClick={() => setTab("pagamentos")}>Pagamentos</button><button className={tab === "documentos" ? "active" : ""} onClick={() => setTab("documentos")}>Documentos</button><button className={tab === "saude" ? "active" : ""} onClick={() => setTab("saude")}>Ficha médica</button></nav>
     {message && <p className="portal-message dashboard-message">{message}</p>}
