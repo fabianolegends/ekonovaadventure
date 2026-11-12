@@ -127,6 +127,23 @@ export async function resetTeamMemberPassword(email: string, password: string) {
   if (!response.ok) throw new Error(payload.error ?? "Não foi possível atualizar a senha.");
 }
 
+export type ContractSigner = { name: string; cpf: string; png: string };
+
+export async function getContractSigner(): Promise<ContractSigner> {
+  const session = await getValidSession();
+  if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
+  const response = await fetch("/api/gestao/contratos/assinatura", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${session.access_token}` },
+    cache: "no-store",
+  });
+  if (!response.ok) {
+    const payload = await response.json().catch(() => null) as { error?: string } | null;
+    throw new Error(payload?.error || "Não foi possível carregar a assinatura da Destino Ativo.");
+  }
+  return await response.json() as ContractSigner;
+}
+
 export async function getMyProfile() {
   const session = await getValidSession();
   if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
