@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { ATACAMA_SLUG, ATACAMA_DUE_DATES, ATACAMA_MAX_INSTALLMENTS, atacamaSchedule, paymentDateLabel } from "../../../lib/atacama-payment";
 
 type BookingPayload = {
   name?: string; email?: string; room?: "duplo" | "single"; payment?: "pix" | "avista";
@@ -11,7 +12,7 @@ const ROUTES = {
   "andes-essencial": { trip: { title: "Andes Essencial", slug: "andes-essencial", category: "Trekking", destination: "Mendoza, Argentina" }, departure: { starts_on: "2027-03-10", ends_on: "2027-03-17", capacity: 12, price_cents: 139900, single_supplement_cents: 30000, currency: "USD", public_registration_enabled: true } },
   "trekking-caminhos-do-ouro": { trip: { title: "Trekking Caminhos do Ouro", slug: "trekking-caminhos-do-ouro", category: "Trekking", destination: "Ouro Preto, Tiradentes e Lavras Novas, MG" }, departure: { starts_on: "2027-06-10", ends_on: "2027-06-17", capacity: 12, price_cents: 399900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true } },
   "biketour-caminhos-do-ouro": { trip: { title: "Biketour Caminhos do Ouro", slug: "biketour-caminhos-do-ouro", category: "Biketour", destination: "Ouro Preto e região, MG" }, departure: { starts_on: "2027-06-04", ends_on: "2027-06-10", capacity: 12, price_cents: 449900, single_supplement_cents: 70000, currency: "BRL", public_registration_enabled: true }, maxPixInstallments: 6, entryDeadline: "2026-12-05" },
-  "trekking-atacama-essencia-2027": { trip: { title: "Trekking Atacama na sua Essência 2027", slug: "trekking-atacama-essencia-2027", category: "Trekking", destination: "San Pedro de Atacama, Chile" }, departure: { starts_on: "2027-09-16", ends_on: "2027-09-24", capacity: 12, price_cents: 179900, single_supplement_cents: 45000, currency: "USD", public_registration_enabled: true }, entryDeadline: "2026-11-04", finalPaymentDue: "2027-08-02", maxPixInstallments: 10 },
+  "trekking-atacama-essencia-2027": { trip: { title: "Trekking Atacama na sua Essência 2027", slug: "trekking-atacama-essencia-2027", category: "Trekking", destination: "San Pedro de Atacama, Chile" }, departure: { starts_on: "2027-09-16", ends_on: "2027-09-24", capacity: 12, price_cents: 179900, single_supplement_cents: 45000, currency: "USD", public_registration_enabled: true }, maxPixInstallments: ATACAMA_MAX_INSTALLMENTS },
 } as const;
 
 function addMonths(date: string, amount: number) {
@@ -23,11 +24,15 @@ function addMonths(date: string, amount: number) {
 export async function POST(request: Request) {
   const booking = await request.json() as BookingPayload;
   const route = ROUTES[booking.slug as keyof typeof ROUTES];
-  const total = booking.total ?? 0;
   if (!route) {
     return NextResponse.json({ error: "O link desta viagem não é válido. Volte à página da viagem e abra a inscrição novamente.", fields: ["link da viagem"] }, { status: 400 });
   }
 
+  const isAtacama = route.trip.slug === ATACAMA_SLUG;
+  const priceCents = route.departure.price_cents + (booking.room === "single" ? route.departure.single_supplement_cents : 0);
+  const total = isAtacama
+    ? Math.round(priceCents * (booking.payment === "avista" ? 0.95 : 1)) / 100
+    : booking.total ?? 0;
   const name = booking.name?.trim() ?? "";
   const email = booking.email?.trim() ?? "";
   const missingFields = [
@@ -41,11 +46,18 @@ export async function POST(request: Request) {
       fields: missingFields,
     }, { status: 400 });
   }
+  if (isAtacama && booking.payment !== "pix" && booking.payment !== "avista") {
+    return NextResponse.json({ error: "Selecione a forma de pagamento." }, { status: 400 });
+  }
+  if (isAtacama && booking.entryDate && booking.entryDate !== ATACAMA_DUE_DATES[0]) {
+    return NextResponse.json({ error: `O primeiro pagamento do Atacama vence em ${paymentDateLabel(ATACAMA_DUE_DATES[0])}. Atualize a inscrição.` }, { status: 400 });
+  }
   if (booking.payment === "pix") {
-    if (!booking.entryDate) return NextResponse.json({ error: "Escolha a data da entrada." }, { status: 400 });
-    if ("entryDeadline" in route && route.entryDeadline && booking.entryDate > route.entryDeadline) return NextResponse.json({ error: route.trip.slug === "trekking-atacama-essencia-2027" ? "Para o Atacama, a entrada deve ser agendada até 04/11/2026." : "Para o Biketour, a entrada deve ser agendada até 05/12/2026." }, { status: 400 });
-    if ("maxPixInstallments" in route && route.maxPixInstallments && (!Number.isInteger(booking.installments) || (booking.installments ?? 0) < 1 || (booking.installments ?? 0) > route.maxPixInstallments)) return NextResponse.json({ error: route.trip.slug === "trekking-atacama-essencia-2027" ? "Revise o número de parcelas do Atacama." : "Para o Biketour, o saldo pode ser parcelado em até 6x." }, { status: 400 });
-    if ("finalPaymentDue" in route && route.finalPaymentDue && addMonths(booking.entryDate, booking.installments ?? 0) > route.finalPaymentDue) return NextResponse.json({ error: "No Atacama, a última parcela deve vencer até 02/08/2027, 45 dias antes da viagem." }, { status: 400 });
+    if (!isAtacama && !booking.entryDate) return NextResponse.json({ error: "Escolha a data da entrada." }, { status: 400 });
+    if ("entryDeadline" in route && booking.entryDate && booking.entryDate > route.entryDeadline) return NextResponse.json({ error: "Para o Biketour, a entrada deve ser agendada até 05/12/2026." }, { status: 400 });
+    if ("maxPixInstallments" in route && (!Number.isInteger(booking.installments) || (booking.installments ?? 0) < 1 || (booking.installments ?? 0) > route.maxPixInstallments)) {
+      return NextResponse.json({ error: `O saldo desta saída pode ser dividido em até ${route.maxPixInstallments} parcelas.` }, { status: 400 });
+    }
   }
 
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -68,7 +80,7 @@ export async function POST(request: Request) {
     const tripRows = await rest(`trips?slug=eq.${route.trip.slug}&select=id`);
     const trip = tripRows[0] || (await rest("trips", { method: "POST", body: JSON.stringify(route.trip) }))[0];
     const departureRows = await rest(`departures?trip_id=eq.${trip.id}&starts_on=eq.${route.departure.starts_on}&select=id,public_registration_enabled`);
-    const departure = departureRows[0] || (await rest("departures", { method: "POST", body: JSON.stringify({ ...route.departure, trip_id: trip.id, status: "em_formacao", booking_enabled: true, cash_discount_percent: 5, max_pix_installments: 6 }) }))[0];
+    const departure = departureRows[0] || (await rest("departures", { method: "POST", body: JSON.stringify({ ...route.departure, trip_id: trip.id, status: "em_formacao", booking_enabled: true, cash_discount_percent: 5, max_pix_installments: "maxPixInstallments" in route ? route.maxPixInstallments : 6, ...(isAtacama ? { pix_final_due_on: ATACAMA_DUE_DATES[ATACAMA_MAX_INSTALLMENTS] } : {}) }) }))[0];
     if (!departure.public_registration_enabled) return NextResponse.json({ error: "As inscrições para esta saída ainda não estão abertas." }, { status: 403 });
 
     const profile = booking.profile || {};
@@ -94,7 +106,12 @@ export async function POST(request: Request) {
     }))[0];
 
     await rest(`payments?reservation_id=eq.${reservation.id}`, { method: "DELETE", headers: { Prefer: "return=minimal" } });
-    const paymentRows = booking.payment === "avista"
+    const paymentRows = isAtacama
+      ? atacamaSchedule(reservationData.quoted_price_cents, booking.payment === "avista" ? 0 : booking.installments!).map((row, index) => ({
+          ...row, reservation_id: reservation.id, method: "pix", status: "pendente",
+          reference: `${route.departure.currency} - ${booking.payment === "avista" ? "pagamento à vista" : index === 0 ? "entrada 30%" : `parcela ${index}`}`,
+        }))
+      : booking.payment === "avista"
       ? [{ reservation_id: reservation.id, amount_cents: Math.round(total * 100), due_on: dueDate, method: "pix", status: "pendente", reference: `${route.departure.currency} - pagamento à vista` }]
       : [
           { reservation_id: reservation.id, amount_cents: Math.round((booking.entry || 0) * 100), due_on: dueDate, method: "pix", status: "pendente", reference: `${route.departure.currency} - entrada 30%` },

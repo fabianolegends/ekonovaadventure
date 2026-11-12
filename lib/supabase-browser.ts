@@ -1,5 +1,7 @@
 "use client";
 
+import { ATACAMA_DUE_DATES, ATACAMA_MAX_INSTALLMENTS } from "./atacama-payment";
+
 type Session = { access_token: string; refresh_token: string; user: { id: string; email?: string } };
 export type ClientRecord = { id: string; full_name: string; email: string | null; phone: string | null; city: string | null; cpf: string | null; rg: string | null; passport_number: string | null; street: string | null; neighborhood: string | null; postal_code: string | null; emergency_contact_name: string | null; emergency_contact_phone: string | null; health_plan: string | null; health_plan_phone: string | null; created_at: string };
 export type PaymentRecord = { id: string; reservation_id: string; amount_cents: number; due_on: string; paid_on: string | null; status: string; reference: string | null; reservations: { departure_id: string; status: string; clients: { id: string; full_name: string } | null; departures: { currency: "USD" | "BRL"; trips: { title: string } | null } | null } | null };
@@ -335,10 +337,13 @@ export async function markPaymentAsPaid(paymentId: string) {
   return payload[0] as PaymentRecord;
 }
 
-export async function replacePendingPaymentPlan(input: { reservationId: string; totalCents: number; entranceCents: number; installments: number; firstDueOn: string; currency: "USD" | "BRL" }) {
+export async function replacePendingPaymentPlan(input: { reservationId: string; totalCents: number; entranceCents: number; installments: number; firstDueOn: string; currency: "USD" | "BRL"; atacama?: boolean }) {
   const session = await getValidSession(); if (!session) throw new Error("Sua sessão expirou. Entre novamente.");
   const { reservationId, totalCents, entranceCents, installments, firstDueOn, currency } = input;
   if (!reservationId || !firstDueOn || !Number.isInteger(totalCents) || !Number.isInteger(entranceCents) || !Number.isInteger(installments) || totalCents <= 0 || entranceCents < 0 || entranceCents > totalCents || installments < 0) throw new Error("Revise os dados da condição especial.");
+  if (input.atacama && (firstDueOn !== ATACAMA_DUE_DATES[0] || installments > ATACAMA_MAX_INSTALLMENTS)) {
+    throw new Error("No Atacama, o primeiro pagamento vence em 05/12/2026 e o saldo pode ter até cinco parcelas.");
+  }
   const remaining = totalCents - entranceCents;
   if ((remaining > 0 && installments === 0) || (remaining === 0 && installments > 0)) throw new Error("Defina parcelas compatíveis com o saldo restante.");
   const headers = { apikey: key!, Authorization: `Bearer ${session.access_token}`, "Content-Type": "application/json" };
@@ -351,7 +356,7 @@ export async function replacePendingPaymentPlan(input: { reservationId: string; 
   const addMonths = (date: string, months: number) => { const item = new Date(`${date}T12:00:00`); item.setMonth(item.getMonth() + months); return item.toISOString().slice(0, 10); };
   const rows: { reservation_id: string; amount_cents: number; due_on: string; status: string; method: string; reference: string }[] = [];
   if (entranceCents > 0) rows.push({ reservation_id: reservationId, amount_cents: entranceCents, due_on: firstDueOn, status: "pendente", method: "pix", reference: `${currency} · condição especial · entrada` });
-  if (installments > 0) { const base = Math.floor(remaining / installments); for (let index = 0; index < installments; index += 1) rows.push({ reservation_id: reservationId, amount_cents: index === installments - 1 ? remaining - base * (installments - 1) : base, due_on: addMonths(firstDueOn, index + 1), status: "pendente", method: "pix", reference: `${currency} · condição especial · parcela ${index + 1}` }); }
+  if (installments > 0) { const base = Math.floor(remaining / installments); for (let index = 0; index < installments; index += 1) rows.push({ reservation_id: reservationId, amount_cents: index === installments - 1 ? remaining - base * (installments - 1) : base, due_on: input.atacama ? ATACAMA_DUE_DATES[index + (entranceCents > 0 ? 1 : 0)] : addMonths(firstDueOn, index + 1), status: "pendente", method: "pix", reference: `${currency} · condição especial · parcela ${index + 1}` }); }
   const createResponse = await fetch(endpoint("/rest/v1/payments"), { method: "POST", headers: { ...headers, Prefer: "return=representation" }, body: JSON.stringify(rows) });
   const created = await createResponse.json() as { message?: string };
   if (!createResponse.ok) throw new Error(created.message ?? "Não foi possível criar a nova condição.");
