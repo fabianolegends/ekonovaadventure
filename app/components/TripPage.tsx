@@ -1,15 +1,14 @@
 import type { Trip } from "../data/trips";
-import { registrationWhatsApp, reservationsWhatsApp, tripPresentation } from "../data/trip-contact";
+import { reservationsWhatsApp, tripRegistration } from "../data/trip-contact";
 import { Arrow, RouteLine } from "./Icons";
 import { ProfileBars } from "./ProfileBars";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { TripGallery } from "./TripGallery";
 
-export function TripPage({ trip }: { trip: Trip }) {
+export function TripPage({ trip, onlineHref }: { trip: Trip; onlineHref?: string }) {
   const archived = trip.status === "Edição realizada";
-  const { badge, action } = tripPresentation[trip.status];
-  const registration = registrationWhatsApp(trip.title);
+  const { badge, action, status, href: registration } = tripRegistration(trip, onlineHref);
   const profileContact = reservationsWhatsApp(`Gostaria de conversar sobre meu preparo para o roteiro ${trip.title}.`);
   const editorial = trip.editorial ?? {
     kicker: trip.kind === "trekking" ? "Caminhar para conhecer" : "Pedalar para descobrir",
@@ -33,7 +32,7 @@ export function TripPage({ trip }: { trip: Trip }) {
         <div className="trip-hero-image"><img src={trip.image} alt={`Paisagem de ${trip.title}`} /></div>
         <div className="trip-hero-copy">
           <p className="eyebrow">{trip.kind === "trekking" ? "Caminhada / Trekking" : "Expedições de cicloturismo"}</p>
-          <span className={`trip-status ${badge}`}>{trip.status}</span>
+          <span className={`trip-status ${badge}`}>{status}</span>
           <h1>{trip.title}</h1>
           <p>{trip.summary}</p>
           <div className="trip-hero-actions">
@@ -143,7 +142,7 @@ export function TripPage({ trip }: { trip: Trip }) {
           </>
         ) : (
           <>
-            <div><p className="eyebrow">Converse com quem opera</p><h2>Este roteiro combina com o seu momento?</h2><p>Fale com a equipe sobre datas, valores e o preparo para a viagem.</p></div>
+            {onlineHref ? <div><p className="eyebrow">Inscrições abertas</p><h2>Inscreva-se para esta saída.</h2><p>No formulário, confira a hospedagem e as condições de pagamento.</p></div> : <div><p className="eyebrow">Converse com quem opera</p><h2>Este roteiro combina com o seu momento?</h2><p>Fale com a equipe sobre datas, valores e o preparo para a viagem.</p></div>}
             <a className="button button-light" href={registration}>{action} <Arrow /></a>
           </>
         )}

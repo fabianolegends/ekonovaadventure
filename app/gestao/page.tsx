@@ -97,7 +97,7 @@ export default function ManagementPage() {
   const totalReceived = selectedPayments.filter((item) => item.status === "pago").reduce((sum, item) => sum + item.amount_cents, 0);
   const money = (value: number) => new Intl.NumberFormat(selectedDeparture?.currency === "BRL" ? "pt-BR" : "en-US", { style: "currency", currency: selectedDeparture?.currency ?? "USD" }).format(value / 100);
   const formatDate = (date: string) => new Date(`${date}T12:00:00`).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
-  const registrationUrl = selectedDeparture?.trips?.slug === "andes-essencial" ? "/inscricao" : `/inscricao/${selectedDeparture?.trips?.slug ?? ""}`;
+  const registrationUrl = selectedDeparture?.trips?.slug ? `/inscricao/${selectedDeparture.trips.slug}?saida=${selectedDeparture.starts_on}` : "/inscricao";
 
   const fallbackName = userEmail?.toLowerCase() === "fabiano@ekonovaadv.com.br" ? "Fabiano Pellenz" : userEmail?.toLowerCase() === "cristiane@ekonovaadv.com.br" ? "Cristiane Pellenz" : (userEmail?.split("@")[0] ?? "Equipe Ekonova").replace(/(^|[._-])([a-z])/g, (_match, prefix, letter) => `${prefix === "." || prefix === "_" || prefix === "-" ? " " : ""}${letter.toUpperCase()}`);
   const currentUser = { name: profile?.full_name || fallbackName, initials: (profile?.full_name || fallbackName).split(" ").map((part) => part[0]).slice(0, 2).join("").toUpperCase(), avatarUrl: profile?.avatar_url ?? null };
@@ -486,7 +486,7 @@ function CommunicationModule({ clients, logs, departures, onAction, onLogged }: 
   const client = clients.find((item) => item.id === clientId);
   const departure = departures.find((item) => item.id === departureId);
   const tripName = departure?.trips?.title ?? "sua viagem";
-  const registrationUrl = departure?.trips?.slug ? `https://www.ekonovaadv.com.br/inscricao/${departure.trips.slug}` : "https://www.ekonovaadv.com.br/inscricao";
+  const registrationUrl = departure?.trips?.slug ? `https://www.ekonovaadv.com.br/inscricao/${departure.trips.slug}?saida=${departure.starts_on}` : "https://www.ekonovaadv.com.br/inscricao";
   const templates: Record<string, string> = {
     "Link de inscrição": "Olá, {nome}! Que bom ter você por aqui. Para se inscrever no roteiro {roteiro}, preencha sua ficha neste link: {link}",
     "Confirmação da inscrição": "Olá, {nome}! Recebemos sua inscrição para {roteiro}. A equipe Ekonova entrará em contato com os próximos passos.",

@@ -1,3 +1,4 @@
+import { catalogDepartures, registrationLinkFor } from "../../../lib/public-departures";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { TripPage } from "../../components/TripPage";
@@ -5,9 +6,7 @@ import { trips } from "../../data/trips";
 
 const BASE_URL = "https://www.ekonovaadv.com.br";
 
-export function generateStaticParams() {
-  return trips.map((trip) => ({ slug: trip.slug }));
-}
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
@@ -48,6 +47,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   const trip = trips.find((item) => item.slug === slug);
   if (!trip) notFound();
 
+  const departures = await catalogDepartures();
   const categoryName =
     trip.kind === "bike" ? "Expedições de cicloturismo" : "Caminhada / Trekking";
   const categoryUrl = trip.kind === "bike" ? "/bike" : "/hiking";
@@ -113,7 +113,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
           __html: JSON.stringify(structuredData).replace(/</g, "\\u003c"),
         }}
       />
-      <TripPage trip={trip} />
+      <TripPage trip={trip} onlineHref={registrationLinkFor(trip, departures)} />
     </>
   );
 }

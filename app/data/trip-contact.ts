@@ -17,3 +17,11 @@ export const tripPresentation: Record<Trip["status"], { badge: string; action: s
   "Lista de interesse": { badge: "status-interest", action: "Entrar na lista pelo WhatsApp" },
   "Edição realizada": { badge: "status-consult", action: "Ver edição realizada" },
 };
+
+export function tripRegistration(trip: Trip, onlineHref?: string) {
+  if (onlineHref) return { badge: "status-confirmed", status: "Inscrições abertas", action: "Fazer inscrição", href: onlineHref };
+  if (trip.status === "Inscrições abertas") {
+    return { badge: "status-consult", status: "Consulte a equipe", action: "Consultar pelo WhatsApp", href: reservationsWhatsApp(`Gostaria de consultar a inscrição para ${trip.title}.`) };
+  }
+  return { ...tripPresentation[trip.status], status: trip.status, href: registrationWhatsApp(trip.title) };
+}

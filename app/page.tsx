@@ -1,3 +1,4 @@
+import { catalogDepartures, registrationLinkFor } from "../lib/public-departures";
 import type { Metadata } from "next";
 import { Arrow, RouteLine } from "./components/Icons";
 import { SiteFooter } from "./components/SiteFooter";
@@ -8,6 +9,8 @@ import { TestimonialsCarousel } from "./components/TestimonialsCarousel";
 import { OrganizationSchema } from "./components/OrganizationSchema";
 import { featuredTrips } from "./data/trips";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Turismo ativo em pequenos grupos",
   description: "Roteiros de caminhada, trekking e cicloturismo em pequenos grupos, no Brasil e na América do Sul, com suporte da equipe Ekonova.",
@@ -16,7 +19,8 @@ export const metadata: Metadata = {
   twitter: { images: ["/images/clientes-trilha.jpeg"] },
 };
 
-export default function Home() {
+export default async function Home() {
+  const departures = await catalogDepartures();
   return (
     <main>
       <OrganizationSchema />
@@ -59,9 +63,9 @@ export default function Home() {
       <section className="section-shell departures-section" id="saidas">
         <div className="section-heading split-heading">
           <div><p className="eyebrow">Inscrições abertas · 2027</p><h2>Escolha sua próxima aventura.</h2></div>
-          <p>Confira as datas e o programa de cada viagem. Para se inscrever, escolha o roteiro e fale com a equipe pelo WhatsApp.</p>
+          <p>Escolha seu roteiro. Use o botão Fazer inscrição para preencher a ficha da viagem ou consulte a equipe pelo WhatsApp quando indicado.</p>
         </div>
-        <div className="featured-grid">{featuredTrips.map((trip) => <TripCard key={trip.slug} trip={trip} />)}</div>
+        <div className="featured-grid">{featuredTrips.map((trip) => <TripCard key={trip.slug} trip={trip} onlineHref={registrationLinkFor(trip, departures)} />)}</div>
       </section>
 
       <section className="method-section" id="metodo">
