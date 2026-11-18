@@ -13,16 +13,17 @@ export type TripGalleryImage = {
 export type Trip = {
   slug: string;
   title: string;
+  seoTitle: string;
+  startDate?: string;
   place: string;
   kind: TripKind;
-  status: "Saída programada" | "Grupo em formação" | "Sob consulta" | "Lista de interesse";
+  status: "Inscrições abertas" | "Edição realizada" | "Grupo em formação" | "Sob consulta" | "Lista de interesse";
   date: string;
   duration: string;
   distance?: string;
   image: string;
   summary: string;
   href?: string;
-  registrationHref?: string;
   highlights: string[];
   included: string[];
   notIncluded?: string[];
@@ -51,16 +52,17 @@ export const trips: Trip[] = [
   {
     slug: "atacama-essencia",
     title: "Atacama na sua Essência",
+    seoTitle: "Atacama na sua Essência: trekking no deserto do Chile",
+    startDate: "2027-09-16",
     place: "San Pedro de Atacama, Chile",
     kind: "trekking",
-    status: "Saída programada",
+    status: "Inscrições abertas",
     date: "16 a 24 de setembro de 2027",
     duration: "9 dias",
     distance: "aprox. 53 km de caminhada",
     image: "/images/rota-atacama-essencia.webp",
     summary: "Trekking, cultura Likanantay, termas, salares e céu estrelado em uma jornada progressiva pelo norte do Chile.",
     href: "/roteiros/atacama-essencia",
-    registrationHref: "/inscricao/trekking-atacama-essencia-2027",
     highlights: ["Pukará de Quitor e Garganta del Diablo", "Gêiseres del Tatio e povoado de Machuca", "Termas de Puritama e Valle del Arcoíris", "Laguna Piedra, flamingos e turismo astronômico"],
     included: ["8 noites no Hotel Toconar, em San Pedro de Atacama, com café da manhã", "Recepção e assistência no Aeroporto El Loa, em Calama", "Transfers privativos Calama–San Pedro–Calama", "Transportes terrestres previstos no roteiro em veículo para até 12 passageiros", "Apoio logístico durante os trekkings", "Ingressos dos atrativos mencionados no programa", "Turismo astronômico com observação por telescópios", "Jantar de recepção no Restaurante Adobe", "Café da manhã na excursão aos Gêiseres del Tatio", "Piquenique no Magic Bus com queijos, frutas, pães, água e vinhos chilenos", "Guia ou coordenador Cadastur com treinamento WAFA pela WMAI", "Guias especializados e coordenação das reservas e atividades"],
     notIncluded: ["Refeições, lanches e bebidas não especificados como incluídos", "Deslocamentos não mencionados no cronograma", "Hospedagens fora do cronograma", "Despesas pessoais e qualquer item não descrito como incluído", "Suplemento de US$ 450 para hospedagem individual"],
@@ -93,16 +95,17 @@ export const trips: Trip[] = [
   {
     slug: "caminhos-do-ouro",
     title: "Trekking Caminhos do Ouro",
+    seoTitle: "Trekking Caminhos do Ouro de Ouro Preto a Tiradentes",
+    startDate: "2027-06-10",
     place: "Ouro Preto, Tiradentes e Lavras Novas, MG",
     kind: "trekking",
-    status: "Saída programada",
+    status: "Inscrições abertas",
     date: "10 a 17 de junho de 2027",
     duration: "8 dias",
     distance: "aprox. 61 km de caminhada",
     image: "/images/rota-caminhos-do-ouro.webp",
     summary: "Cinco dias de trekking por montanhas, vilarejos coloniais, cachoeiras e antigos caminhos da Estrada Real.",
     href: "/roteiros/caminhos-do-ouro",
-    registrationHref: "/inscricao/trekking-caminhos-do-ouro",
     highlights: ["Pico do Itacolomi", "Travessia de Ouro Preto a São Bartolomeu", "Serra de São José e Tiradentes", "Estrada Real até Lavras Novas"],
     included: ["7 noites em pousadas com acomodação em quartos duplos", "Cafés da manhã previstos durante a hospedagem", "2 almoços incluídos, entre eles a despedida com comida mineira", "Transfers privativos previstos no programa", "5 dias de trekking", "Ingressos dos atrativos mencionados", "Assistência e apoio logístico durante toda a estadia", "Guia Cadastur Brasil e América do Sul, com treinamento em medicina avançada em áreas remotas pela WMA International"],
     notIncluded: ["Refeições, lanches e bebidas não especificados como incluídos", "Deslocamentos até Minas Gerais e fora do cronograma", "Despesas pessoais e serviços extras", "Seguro viagem ou aventura, salvo confirmação expressa na proposta", "Suplemento de R$ 700 para hospedagem individual"],
@@ -134,14 +137,16 @@ export const trips: Trip[] = [
   {
     slug: "salta",
     title: "Salta · Norte Argentino",
+    seoTitle: "Trekking em Salta e Cafayate no norte argentino",
+    startDate: "2026-09-03",
     place: "Salta e Cafayate, Argentina",
     kind: "trekking",
-    status: "Saída programada",
+    status: "Edição realizada",
     date: "03 a 10 de setembro de 2026",
     duration: "8 dias",
     distance: "aprox. 50 km de caminhada",
     image: "/images/hero-salta.jpg",
-    summary: "Andes, cânions, vinhedos de altitude e cultura regional em uma travessia desenhada para caminhar com presença.",
+    summary: "Em setembro de 2026, o grupo percorreu as trilhas de Salta e os vinhedos de Cafayate. Não há saída prevista para 2027.",
     href: "/roteiros/salta",
     highlights: ["Quebrada de las Conchas", "Cafayate e vinhos de altitude", "Trem de las Nubes", "Sete Cascadas e Rio Chusca"],
     included: ["7 diárias em pousadas ou hotéis com café da manhã", "2 jantares ou almoços previstos no programa", "Almoço harmonizado na Bodega El Esteco", "Ingressos dos atrativos mencionados", "Registros de fotografia, vídeo e drone", "Camiseta Ekonova Adventure", "Guia Cadastur com formação em medicina de áreas remotas"],
@@ -150,10 +155,9 @@ export const trips: Trip[] = [
       { label: "Formato", value: "Grupo pequeno · até 12 participantes" },
       { label: "Hospedagem", value: "7 diárias · padrão turístico ou superior" },
       { label: "Altitude", value: "Trem de las Nubes chega a 4.220 m" },
-      { label: "Investimento", value: "Consulte condições da saída de 2026" },
     ],
     profile: { effort: 3, technique: 2, exposure: 3, comfort: 3 },
-    note: "Roteiro com altitude. O preparo e a adaptação individual são avaliados antes da confirmação da reserva.",
+    note: "O percurso incluiu caminhadas em altitude e tempo para aclimatação.",
     editorial: { kicker: "Cânions, Puna e vinhos de altitude", title: "O Norte Argentino em uma jornada de contrastes.", paragraphs: ["Salta e Cafayate revelam um território de montanhas, vales coloridos, cultura andina e vinhedos que crescem em altitude. A experiência alterna caminhadas, paisagens monumentais e encontros com a gastronomia regional.", "O programa inclui trilhas em torno de Salta e Cafayate, o icônico Trem de las Nubes e um dia dedicado aos vinhos do Vale Calchaquí."] },
     stages: [
       { title: "Chegada a Salta", meta: "1º dia · recepção", description: "Encontro do grupo e tempo livre para conhecer a arquitetura colonial, os museus e a gastronomia regional." },
@@ -170,16 +174,17 @@ export const trips: Trip[] = [
   {
     slug: "equador",
     title: "Trekking no Equador",
+    seoTitle: "Trekking no Equador pela Avenida dos Vulcões",
+    startDate: "2027-09-03",
     place: "Quito e Andes Equatorianos",
     kind: "trekking",
-    status: "Saída programada",
+    status: "Inscrições abertas",
     date: "03 a 11 de setembro de 2027",
     duration: "9 dias",
     distance: "aprox. 50 km de caminhada",
     image: "/images/rota-equador.jpg",
     summary: "Vulcões, lagunas e vilarejos andinos em uma jornada de altitude com progressão planejada e acompanhamento próximo.",
     href: "/roteiros/equador",
-    registrationHref: "https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20me%20inscrever%20no%20Trekking%20no%20Equador%202027.",
     highlights: ["Laguna Cuicocha", "Parque Nacional Cotopaxi", "Cratera de Quilotoa", "Pailón del Diablo"],
     included: ["7 diárias em pousadas ou hotéis com café da manhã", "2 jantares previstos no programa", "Ingressos dos atrativos mencionados", "Registros de fotografia, vídeo e drone", "Camiseta exclusiva da expedição", "Guia Cadastur com formação em medicina de áreas remotas"],
     notIncluded: ["Passagens e deslocamentos internacionais", "Refeições, lanches e bebidas não especificados", "Hospedagens e deslocamentos fora do cronograma", "Despesas pessoais e serviços extras", "Suplemento para hospedagem individual"],
@@ -208,16 +213,17 @@ export const trips: Trip[] = [
   {
     slug: "biketour-das-serras",
     title: "Biketour das Serras",
+    seoTitle: "Biketour das Serras pelos cânions dos Aparados da Serra",
+    startDate: "2027-04-17",
     place: "Aparados da Serra, RS e SC",
     kind: "bike",
-    status: "Saída programada",
+    status: "Inscrições abertas",
     date: "17 a 23 de abril de 2027",
     duration: "7 dias · 6 dias de pedal",
     distance: "455 km · 6.920 m+",
     image: "/images/rota-biketour-das-serras.webp",
     summary: "Uma travessia pelos cânions e Campos de Cima da Serra, conectando Cambará do Sul, Praia Grande, São José dos Ausentes, Bom Jesus e Jaquirana.",
     href: "/roteiros/biketour-das-serras",
-    registrationHref: "https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20me%20inscrever%20no%20Biketour%20das%20Serras%202027.",
     highlights: ["Cânion Itaimbezinho e Serra do Faxinal", "Serra da Rocinha e Fazenda Aparados da Serra", "Campos de Cima da Serra", "Cachoeirão dos Rodrigues"],
     included: ["6 noites em pousadas, em quartos duplos", "6 cafés da manhã e 5 jantares previstos no programa", "Veículo de apoio para transporte das bagagens e assistência quando necessário", "Assistência, logística e atendimento durante toda a estadia", "6 dias de pedal", "Tracks GPX para navegação", "Rastreador SPOT via satélite", "Guia Cadastur Brasil e América do Sul, com treinamento em medicina avançada em áreas remotas pela WMA International"],
     notIncluded: ["Deslocamento até Cambará do Sul e retorno após o encerramento", "Almoços, lanches, bebidas e refeições não especificadas como incluídas", "Bicicleta e equipamentos pessoais", "Despesas pessoais e serviços extras", "Responsabilidades e despesas decorrentes de acidentes", "Suplemento de R$ 600 para hospedagem individual"],
@@ -248,16 +254,17 @@ export const trips: Trip[] = [
   {
     slug: "biketour-caminhos-do-ouro",
     title: "Biketour Caminhos do Ouro",
+    seoTitle: "Biketour Caminhos do Ouro de mountain bike em Minas Gerais",
+    startDate: "2027-06-04",
     place: "Ouro Preto e região, Minas Gerais",
     kind: "bike",
-    status: "Saída programada",
+    status: "Inscrições abertas",
     date: "04 a 10 de junho de 2027",
     duration: "7 dias",
     distance: "aprox. 285 km · 9.018 m+",
     image: "/images/rota-biketour-caminhos-do-ouro.webp",
     summary: "Cinco dias de mountain bike por estradas rurais, trilhas, serras e caminhos históricos do Ciclo do Ouro.",
     href: "/roteiros/biketour-caminhos-do-ouro",
-    registrationHref: "/inscricao/biketour-caminhos-do-ouro",
     highlights: ["Estrada Real e Parque das Andorinhas", "Distrito histórico de São Bartolomeu", "Vale do Rio das Velhas e Serra do Gandarela", "Lavras Novas e Parque Estadual do Itacolomi"],
     included: ["6 noites em pousadas com acomodação em quartos duplos", "6 cafés da manhã e 2 jantares previstos no programa", "Veículo de apoio para transporte de bagagens e assistência quando necessário", "Assistência, logística e atendimento durante toda a estadia", "5 dias de pedal", "Tracks GPX para navegação", "Rastreador SPOT via satélite", "Guia Cadastur Brasil e América do Sul, com treinamento em medicina avançada em áreas remotas pela WMA International"],
     notIncluded: ["Deslocamento até Ouro Preto e retorno após o encerramento", "Refeições, lanches e bebidas não especificados como incluídos", "Bicicleta, equipamentos pessoais e manutenção que exceda o suporte básico", "Seguro viagem ou aventura, salvo confirmação expressa na proposta", "Despesas pessoais e serviços extras", "Suplemento de R$ 700 para hospedagem individual"],
@@ -288,6 +295,8 @@ export const trips: Trip[] = [
   {
     slug: "serra-ao-mar",
     title: "Biketour da Serra ao Mar",
+    seoTitle: "Biketour da Serra ao Mar de Canela a Garopaba",
+    startDate: "2026-12-04",
     place: "Canela/RS a Garopaba/SC",
     kind: "bike",
     status: "Grupo em formação",
@@ -327,16 +336,17 @@ export const trips: Trip[] = [
   {
     slug: "andes-essencial",
     title: "Andes Essencial",
+    seoTitle: "Andes Essencial: trekking entre Mendoza e o Aconcágua",
+    startDate: "2027-03-10",
     place: "Mendoza e Uspallata, Argentina",
     kind: "trekking",
-    status: "Saída programada",
+    status: "Inscrições abertas",
     date: "10 a 17 de março de 2027",
     duration: "8 dias",
     distance: "aprox. 64 km de caminhada",
     image: "/images/rota-andes-essencial.jpg",
     summary: "Trekkings progressivos, alta montanha e experiências harmonizadas entre Mendoza, Uspallata e o Aconcágua.",
     href: "/roteiros/andes-essencial",
-    registrationHref: "https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20me%20inscrever%20no%20Andes%20Essencial%202027.",
     highlights: ["Reserva Natural Divisadero Largo", "Vallecitos e Cordón del Plata", "Aconcágua: Horcones e Confluencia", "Bodegas Los Toneles e Lagarde"],
     included: ["7 diárias em pousadas ou hotéis com café da manhã", "Almoço harmonizado de quatro tempos na Bodega Los Toneles ou similar", "Jantar harmonizado de quatro tempos na Bodega Lagarde ou similar", "Ingressos e permissões das atividades mencionadas", "Transfers terrestres previstos no cronograma", "Camiseta Ekonova Adventure", "Guia Cadastur com formação em medicina de áreas remotas"],
     notIncluded: ["Passagens e transfers de chegada e saída", "Refeições, lanches e bebidas não especificados", "Hospedagens e deslocamentos fora do cronograma", "Despesas pessoais e serviços extras", "Suplemento de US$ 300 para hospedagem individual", "Qualquer item não descrito como incluído"],
@@ -468,6 +478,7 @@ export const trips: Trip[] = [
   {
     slug: "serra-do-cipo",
     title: "Serra do Cipó",
+    seoTitle: "Trekking na Serra do Cipó entre cânions e cachoeiras",
     place: "Minas Gerais",
     kind: "trekking",
     status: "Sob consulta",
@@ -501,6 +512,7 @@ export const trips: Trip[] = [
   {
     slug: "ouro-preto",
     title: "Caminhos do Imperador",
+    seoTitle: "Caminhos do Imperador: trekking pela Estrada Real em Minas",
     place: "Ouro Preto, Minas Gerais",
     kind: "trekking",
     status: "Sob consulta",
@@ -534,6 +546,7 @@ export const trips: Trip[] = [
   {
     slug: "vinhos-de-altitude",
     title: "Caminho dos Vinhos de Altitude",
+    seoTitle: "Caminho dos Vinhos de Altitude a pé na Serra Catarinense",
     place: "São Joaquim e Bom Jardim da Serra, SC",
     kind: "trekking",
     status: "Lista de interesse",
@@ -551,6 +564,7 @@ export const trips: Trip[] = [
   {
     slug: "caminhos-de-florianopolis",
     title: "Caminhos de Florianópolis",
+    seoTitle: "Caminhos de Florianópolis: trilhas costeiras na Grande Florianópolis",
     place: "Grande Florianópolis, SC",
     kind: "trekking",
     status: "Lista de interesse",
@@ -568,6 +582,7 @@ export const trips: Trip[] = [
   {
     slug: "ilha-da-magia",
     title: "Ilha da Magia",
+    seoTitle: "Ilha da Magia a pé pelas praias e trilhas de Florianópolis",
     place: "Florianópolis, SC",
     kind: "trekking",
     status: "Lista de interesse",
@@ -585,6 +600,7 @@ export const trips: Trip[] = [
   {
     slug: "uruguai-natural",
     title: "Uruguai Natural",
+    seoTitle: "Uruguai Natural: caminhada pelas dunas e praias do litoral",
     place: "Litoral do Uruguai",
     kind: "trekking",
     status: "Lista de interesse",
@@ -602,6 +618,7 @@ export const trips: Trip[] = [
   {
     slug: "serras-de-cordoba",
     title: "Serras de Córdoba",
+    seoTitle: "Trekking nas Serras de Córdoba na Argentina",
     place: "Villa General Belgrano, Argentina",
     kind: "trekking",
     status: "Lista de interesse",
@@ -619,6 +636,7 @@ export const trips: Trip[] = [
   {
     slug: "patagonia",
     title: "Patagônia · Sete Lagos",
+    seoTitle: "Cicloturismo na Patagônia pela Rota dos Sete Lagos",
     place: "Patagônia Argentina",
     kind: "bike",
     status: "Lista de interesse",
@@ -658,18 +676,19 @@ export const trips: Trip[] = [
   {
     slug: "caminhos-da-colonia",
     title: "Caminhos da Colônia",
+    seoTitle: "Caminhos da Colônia de bicicleta pela Serra Catarinense",
     place: "Rancho Queimado, Santa Catarina",
     kind: "bike",
     status: "Lista de interesse",
     date: "previsto para 2027",
-    duration: "7 dias · 5 dias de pedal",
-    distance: "aprox. 314 km",
+    duration: "6 dias · 5 dias de pedal",
+    distance: "314,4 km · 7.783 m+",
     image: "/images/rota-desbravando.webp",
     gallery: ["/images/gallery/caminhos-da-colonia/1.webp", "/images/gallery/caminhos-da-colonia/2.webp", "/images/gallery/caminhos-da-colonia/3.webp", "/images/gallery/caminhos-da-colonia/4.webp", "/images/gallery/caminhos-da-colonia/5.webp", "/images/gallery/caminhos-da-colonia/6.webp"],
     summary: "Uma expedição pelo antigo Caminho dos Tropeiros, conectando vales, comunidades rurais e montanhas da Serra Catarinense.",
     highlights: ["Caminho dos Tropeiros", "Soldados Sebold", "Serra da Garganta", "Rancho Queimado"],
     included: [
-      "5 noites em pousadas, em quartos duplos",
+      "Hospedagem em pousadas, em quartos duplos",
       "6 cafés da manhã e 5 jantares previstos no programa",
       "1 almoço na Fluss Haus",
       "Veículo de apoio e transporte das bagagens",
@@ -703,16 +722,17 @@ export const trips: Trip[] = [
     },
     stages: [
       { title: "Chegada a Rancho Queimado", meta: "1º dia · encontro e preparação", description: "Recepção na cidade serrana, acomodação e jantar de confraternização. O encontro serve para apresentar os detalhes finais, alinhar expectativas e integrar o grupo." },
-      { title: "Rancho Queimado a Vargem do Cedro", meta: "2º dia · 88,5 km · 1.700 m+", description: "A primeira grande etapa atravessa a Serra da Garganta, uma estrada que serpenteia por vales estreitos e Mata Atlântica preservada. Ao final, descanso e experiência gastronômica na Fluss Haus." },
-      { title: "Vargem do Cedro a Anitápolis", meta: "3º dia · 64 km · quase 1.500 m+", description: "O caminho passa por São Martinho, comunidades rurais e Santa Rosa de Lima. Vales, rios, agricultura familiar e pequenas cidades revelam o cotidiano do interior catarinense." },
-      { title: "Anitápolis a Alfredo Wagner", meta: "4º dia · 39 km · aproximadamente 1.000 m+", description: "Uma etapa mais curta pelas estradas de terra entre vales e montanhas. O ritmo permite recuperar as pernas sem abandonar as subidas e termina na cidade conhecida como Terra das Cachoeiras." },
-      { title: "Circuito Soldados Sebold", meta: "5º dia · 51,8 km", description: "O único percurso circular da viagem começa com uma longa subida. A recompensa é chegar às quatro torres de arenito Botucatu, com cerca de 90 metros, alinhadas diante da Serra Geral." },
-      { title: "Alfredo Wagner a Rancho Queimado", meta: "6º dia · 71 km · mais de 2.000 m+", description: "O fechamento é também a etapa mais exigente: subidas longas, trechos técnicos e uma sequência de serras entre 480 e 850 metros de altitude. A chegada celebra a travessia e o esforço do grupo." },
+      { title: "Rancho Queimado a Vargem do Cedro", meta: "2º dia · 88,5 km · 1.720 m+", description: "A primeira grande etapa atravessa a Serra da Garganta, uma estrada que serpenteia por vales estreitos e Mata Atlântica preservada. Ao final, descanso e experiência gastronômica na Fluss Haus." },
+      { title: "Vargem do Cedro a Anitápolis", meta: "3º dia · 64,6 km · 1.474 m+", description: "O caminho passa por São Martinho, comunidades rurais e Santa Rosa de Lima. Vales, rios, agricultura familiar e pequenas cidades revelam o cotidiano do interior catarinense." },
+      { title: "Anitápolis a Alfredo Wagner", meta: "4º dia · 39,1 km · 1.006 m+", description: "Uma etapa mais curta pelas estradas de terra entre vales e montanhas. O ritmo permite recuperar as pernas sem abandonar as subidas e termina na cidade conhecida como Terra das Cachoeiras." },
+      { title: "Circuito Soldados Sebold", meta: "5º dia · 51,8 km · 1.529 m+", description: "O único percurso circular da viagem começa com uma longa subida. A recompensa é chegar às quatro torres de arenito Botucatu, com cerca de 90 metros, alinhadas diante da Serra Geral." },
+      { title: "Alfredo Wagner a Rancho Queimado", meta: "6º dia · 70,4 km · 2.054 m+", description: "O fechamento é também a etapa mais exigente: subidas longas, trechos técnicos e uma sequência de serras entre 480 e 850 metros de altitude. A viagem termina na chegada a Rancho Queimado." },
     ],
   },
   {
     slug: "mar-para-serra",
     title: "Do Mar para a Serra",
+    seoTitle: "Do Mar para a Serra de bicicleta pela Serra do Rio do Rastro",
     place: "Garopaba/SC a Canela/RS",
     kind: "bike",
     status: "Sob consulta",
@@ -751,6 +771,7 @@ export const trips: Trip[] = [
   {
     slug: "bike-serras-de-cordoba",
     title: "Serras de Córdoba",
+    seoTitle: "Cicloturismo nas Serras de Córdoba na Argentina",
     place: "Villa General Belgrano, Argentina",
     kind: "bike",
     status: "Lista de interesse",
@@ -777,6 +798,7 @@ export const trips: Trip[] = [
   {
     slug: "lagos-e-vulcoes",
     title: "Lagos e Vulcões",
+    seoTitle: "Cicloturismo entre lagos e vulcões no sul do Chile",
     place: "Puerto Montt e Região dos Lagos, Chile",
     kind: "bike",
     status: "Lista de interesse",
@@ -803,6 +825,7 @@ export const trips: Trip[] = [
   {
     slug: "desbravando-sc",
     title: "Desbravando Santa Catarina",
+    seoTitle: "Desbravando Santa Catarina de bicicleta pelas estradas da serra",
     place: "Serra Catarinense",
     kind: "bike",
     status: "Sob consulta",
@@ -821,3 +844,9 @@ const featuredTripSlugs = ["andes-essencial", "biketour-das-serras", "biketour-c
 export const featuredTrips = featuredTripSlugs
   .map((slug) => trips.find((trip) => trip.slug === slug))
   .filter((trip): trip is Trip => Boolean(trip));
+
+export function upcomingTrips(kind: TripKind) {
+  return trips
+    .filter((trip) => trip.kind === kind && trip.status !== "Edição realizada")
+    .sort((a, b) => (a.startDate ?? "9999").localeCompare(b.startDate ?? "9999"));
+}

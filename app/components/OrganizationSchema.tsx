@@ -20,8 +20,8 @@ export function OrganizationSchema() {
     ],
     contactPoint: {
       "@type": "ContactPoint",
-      contactType: "reservas e atendimento",
-      telephone: "+55 54 99119-5626",
+      contactType: "reservas",
+      telephone: "+55 54 99195-3197",
       email: "contato@ekonovaadv.com.br",
       availableLanguage: ["Portuguese"],
     },

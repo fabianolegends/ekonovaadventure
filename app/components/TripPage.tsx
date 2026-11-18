@@ -1,19 +1,16 @@
 import type { Trip } from "../data/trips";
+import { registrationWhatsApp, reservationsWhatsApp, tripPresentation } from "../data/trip-contact";
 import { Arrow, RouteLine } from "./Icons";
 import { ProfileBars } from "./ProfileBars";
 import { SiteFooter } from "./SiteFooter";
 import { SiteHeader } from "./SiteHeader";
 import { TripGallery } from "./TripGallery";
 
-const statusClass: Record<Trip["status"], string> = {
-  "Saída programada": "status-confirmed",
-  "Grupo em formação": "status-forming",
-  "Sob consulta": "status-consult",
-  "Lista de interesse": "status-interest",
-};
-
 export function TripPage({ trip }: { trip: Trip }) {
-  const whatsapp = `https://wa.me/5554991195626?text=${encodeURIComponent(`Olá! Gostaria de conversar sobre o roteiro ${trip.title}.`)}`;
+  const archived = trip.status === "Edição realizada";
+  const { badge, action } = tripPresentation[trip.status];
+  const registration = registrationWhatsApp(trip.title);
+  const profileContact = reservationsWhatsApp(`Gostaria de conversar sobre meu preparo para o roteiro ${trip.title}.`);
   const editorial = trip.editorial ?? {
     kicker: trip.kind === "trekking" ? "Caminhar para conhecer" : "Pedalar para descobrir",
     title: trip.kind === "trekking" ? "Uma paisagem que se revela no ritmo dos passos." : "Uma rota desenhada para viver o caminho por inteiro.",
@@ -36,14 +33,14 @@ export function TripPage({ trip }: { trip: Trip }) {
         <div className="trip-hero-image"><img src={trip.image} alt={`Paisagem de ${trip.title}`} /></div>
         <div className="trip-hero-copy">
           <p className="eyebrow">{trip.kind === "trekking" ? "Caminhada / Trekking" : "Expedições de cicloturismo"}</p>
-          <span className={`trip-status ${statusClass[trip.status]}`}>{trip.registrationHref ? "Inscrições abertas" : trip.status}</span>
+          <span className={`trip-status ${badge}`}>{trip.status}</span>
           <h1>{trip.title}</h1>
           <p>{trip.summary}</p>
           <div className="trip-hero-actions">
             <a className="button button-primary" href="#programa">Ver programa <Arrow /></a>
-            <a className="trip-hero-link" href={trip.registrationHref ?? whatsapp}>
-              {trip.registrationHref ? "Fazer inscrição" : "Consultar disponibilidade"}
-            </a>
+            {archived
+              ? <a className="trip-hero-link" href="/#saidas">Ver próximas viagens</a>
+              : <a className="trip-hero-link" href={registration}>{action}</a>}
           </div>
           <RouteLine />
         </div>
@@ -76,9 +73,9 @@ export function TripPage({ trip }: { trip: Trip }) {
         <aside className="profile-panel" id="perfil">
           <p className="eyebrow">Perfil do roteiro</p>
           <ProfileBars profile={trip.profile} />
-          <p className="profile-disclaimer">Escala comparativa de 1 a 5. A avaliação individual acontece antes da confirmação.</p>
+          <p className="profile-disclaimer">Escala comparativa de 1 a 5.{!archived && " A avaliação individual acontece antes da confirmação."}</p>
           {trip.note && <div className="attention-note"><strong>Ponto de atenção</strong><p>{trip.note}</p></div>}
-          <a className="profile-contact" href={whatsapp}>Conversar sobre meu perfil <Arrow /></a>
+          {!archived && <a className="profile-contact" href={profileContact}>Conversar sobre meu perfil <Arrow /></a>}
         </aside>
       </section>
 
@@ -86,7 +83,7 @@ export function TripPage({ trip }: { trip: Trip }) {
         <div className="journey-heading">
           <p className="eyebrow">Como a experiência acontece</p>
           <h2>O roteiro, etapa por etapa.</h2>
-          <p>O desenho definitivo pode variar conforme a data, o clima e o formato do grupo. Antes da confirmação, você recebe todas as informações atualizadas.</p>
+          <p>{archived ? "Confira as etapas da edição realizada." : "O desenho definitivo pode variar conforme a data, o clima e o formato do grupo. Antes da confirmação, você recebe todas as informações atualizadas."}</p>
         </div>
         <div className="journey-list">
           {stages.map((stage, index) => (
@@ -104,9 +101,6 @@ export function TripPage({ trip }: { trip: Trip }) {
         <section className="practical-strip" aria-label="Informações práticas">
           {trip.practical.map((item) => {
             const isInvestment = item.label.toLocaleLowerCase("pt-BR") === "investimento";
-            const whatsappMessage = encodeURIComponent(
-              `Olá! Gostaria de consultar o investimento e as condições do roteiro ${trip.title}.`
-            );
 
             return (
               <div key={item.label}>
@@ -114,7 +108,7 @@ export function TripPage({ trip }: { trip: Trip }) {
                 {isInvestment ? (
                   <a
                     className="investment-whatsapp"
-                    href={`https://wa.me/5554991195626?text=${whatsappMessage}`}
+                    href={reservationsWhatsApp(`Gostaria de consultar o investimento do roteiro ${trip.title}.`)}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -130,20 +124,29 @@ export function TripPage({ trip }: { trip: Trip }) {
       )}
 
       <section className="not-included-section included-list-section" id="inclui">
-        <div><p className="eyebrow">Suporte Ekonova</p><h2>O que está incluído.</h2><p>Serviços e estruturas previstos para que você saiba exatamente com o que pode contar durante a experiência.</p></div>
+        <div><p className="eyebrow">Suporte Ekonova</p><h2>O que está incluído.</h2><p>{archived ? "Serviços que fizeram parte desta edição." : "Serviços e estruturas previstos para que você saiba exatamente com o que pode contar durante a experiência."}</p></div>
         <ul>{trip.included.map((item) => <li key={item}>{item}</li>)}</ul>
       </section>
 
       {trip.notIncluded && (
         <section className="not-included-section">
-          <div><p className="eyebrow">Planejamento transparente</p><h2>O que não está incluído.</h2><p>Estes itens ficam sob responsabilidade de cada participante ou são contratados separadamente.</p></div>
+          <div><p className="eyebrow">Planejamento transparente</p><h2>O que não está incluído.</h2><p>{archived ? "Itens que ficaram por conta dos participantes." : "Estes itens ficam sob responsabilidade de cada participante ou são contratados separadamente."}</p></div>
           <ul>{trip.notIncluded.map((item) => <li key={item}>{item}</li>)}</ul>
         </section>
       )}
 
       <section className="cta-band">
-        <div><p className="eyebrow">Converse com quem opera</p><h2>Este roteiro combina com o seu momento?</h2><p>Conte como você caminha ou pedala hoje. A orientação começa antes da reserva.</p></div>
-        <a className="button button-light" href={whatsapp}>Quero conversar <Arrow /></a>
+        {archived ? (
+          <>
+            <div><p className="eyebrow">Edição realizada</p><h2>Conheça as próximas viagens.</h2></div>
+            <a className="button button-light" href="/#saidas">Ver inscrições abertas <Arrow /></a>
+          </>
+        ) : (
+          <>
+            <div><p className="eyebrow">Converse com quem opera</p><h2>Este roteiro combina com o seu momento?</h2><p>Fale com a equipe sobre datas, valores e o preparo para a viagem.</p></div>
+            <a className="button button-light" href={registration}>{action} <Arrow /></a>
+          </>
+        )}
       </section>
       <SiteFooter />
     </main>

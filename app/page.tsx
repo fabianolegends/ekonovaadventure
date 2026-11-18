@@ -26,7 +26,7 @@ export default function Home() {
         <div className="hero-copy">
           <p className="eyebrow">Turismo ativo</p>
           <h1>Viva a aventura no seu ritmo.</h1>
-          <p className="hero-lede">Pequenos grupos, caminhos autênticos e suporte especializado para viver a natureza com autonomia e segurança.</p>
+          <p className="hero-lede">Caminhadas guiadas e expedições de bicicleta em grupos de até 12 pessoas, das serras do Sul aos Andes. Antes de reservar, converse com a nossa equipe sobre o ritmo, o terreno e o preparo para cada viagem.</p>
           <div className="hero-actions">
             <a className="button button-primary" href="#saidas">Ver inscrições abertas <Arrow /></a>
             <a className="button button-secondary" href="/sobre">Conheça a Ekonova</a>
@@ -47,7 +47,7 @@ export default function Home() {
         <div className="pillar-grid">
           <a className="pillar-card" href="/hiking">
             <img src="/images/clientes-trilha.jpeg" alt="Clientes Ekonova caminhando em grupo em uma trilha vulcânica" />
-            <div className="pillar-overlay"><span>01 · A pé</span><h3>Caminhada / Trekking</h3><p>Caminhadas de um dia, pequenos grupos e natureza com contexto.</p><i><Arrow /></i></div>
+            <div className="pillar-overlay"><span>01 · A pé</span><h3>Caminhada / Trekking</h3><p>Viagens em pequenos grupos, com caminhadas diárias e acompanhamento de guias.</p><i><Arrow /></i></div>
           </a>
           <a className="pillar-card" href="/bike">
             <img src="/images/card-cicloturismo.jpg" alt="Ciclista Ekonova pedalando por uma paisagem de campos verdes" />
@@ -59,7 +59,7 @@ export default function Home() {
       <section className="section-shell departures-section" id="saidas">
         <div className="section-heading split-heading">
           <div><p className="eyebrow">Inscrições abertas · 2027</p><h2>Escolha sua próxima aventura.</h2></div>
-          <p>Todos os roteiros com data confirmada para 2027 estão aqui. Confira os detalhes e faça sua inscrição pelo site ou diretamente com a equipe.</p>
+          <p>Confira as datas e o programa de cada viagem. Para se inscrever, escolha o roteiro e fale com a equipe pelo WhatsApp.</p>
         </div>
         <div className="featured-grid">{featuredTrips.map((trip) => <TripCard key={trip.slug} trip={trip} />)}</div>
       </section>
@@ -115,7 +115,7 @@ export default function Home() {
 
       <section className="planning-band">
         <div><p className="eyebrow">Locais que estamos pesquisando</p><h2>Novos caminhos no Brasil e na América do Sul.</h2></div>
-        <div><p><strong>Estrada Real, Rota do Café na Colômbia, litoral uruguaio e Pampa Gaúcho.</strong> Estamos estudando os percursos, a melhor época e o formato de cada experiência. Quem entra nessa conversa acompanha a curadoria e ajuda a definir as próximas saídas.</p><a className="text-link light-link" href="https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20entrar%20na%20lista%20de%20interesse%20dos%20novos%20roteiros%20da%20Ekonova.">Entrar na lista de interesse <Arrow /></a></div>
+        <div><p><strong>Estrada Real, Rota do Café na Colômbia, litoral uruguaio e Pampa Gaúcho.</strong> Estamos estudando os percursos, a melhor época e o formato de cada experiência. Quem entra nessa conversa acompanha a curadoria e ajuda a definir as próximas saídas.</p><a className="text-link light-link" href="https://wa.me/5554991953197?text=Ol%C3%A1%21%20Quero%20entrar%20na%20lista%20de%20interesse%20dos%20novos%20roteiros%20da%20Ekonova.">Entrar na lista de interesse <Arrow /></a></div>
       </section>
 
       <section className="about-preview" id="sobre">

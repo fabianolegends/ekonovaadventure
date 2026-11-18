@@ -19,7 +19,7 @@ export async function generateMetadata({
 
   if (!trip) return {};
 
-  const title = `${trip.title} · ${trip.place}`;
+  const title = trip.seoTitle;
   const description = `${trip.summary} ${trip.date} · ${trip.duration}.`;
   const url = `/roteiros/${trip.slug}`;
 

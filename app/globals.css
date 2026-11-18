@@ -168,6 +168,8 @@ h1 { margin: 0; max-width: 660px; font-size: clamp(58px, 6vw, 98px); line-height
 .status-consult { background: #edf0ed; color: #526159; }
 .status-interest { background: #e5e0f0; color: #4d4263; }
 .trip-content { padding: 27px 28px 30px; }
+.trip-card-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 24px; }
+.trip-card-actions a.text-link { margin-top: 0; }
 .trip-place { margin: 0 0 13px; color: #9a722f; font-size: 10px; font-weight: 750; letter-spacing: .14em; text-transform: uppercase; }
 .trip-content h3 { margin: 0; font-family: var(--font-display), Georgia, serif; font-size: clamp(29px, 2.5vw, 39px); font-weight: 600; line-height: 1.02; }
 .trip-date { margin: 13px 0 0; color: var(--ink); font-size: 12px; font-weight: 700; }

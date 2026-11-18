@@ -8,7 +8,7 @@ type Filter = "todos" | TripKind;
 
 export function RouteExplorer() {
   const [filter, setFilter] = useState<Filter>("todos");
-  const filtered = filter === "todos" ? trips : trips.filter((trip) => trip.kind === filter);
+  const filtered = trips.filter((trip) => trip.status !== "Edição realizada" && (filter === "todos" || trip.kind === filter));
 
   return (
     <div>

@@ -3,7 +3,7 @@ import { Arrow } from "../components/Icons";
 import { SiteFooter } from "../components/SiteFooter";
 import { SiteHeader } from "../components/SiteHeader";
 import { TripCard } from "../components/TripCard";
-import { trips } from "../data/trips";
+import { upcomingTrips } from "../data/trips";
 
 export const metadata: Metadata = {
   title: "Expedições de cicloturismo",
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export default function BikePage() {
-  const bike = trips.filter((trip) => trip.kind === "bike");
+  const bike = upcomingTrips("bike");
   return <main><SiteHeader />
     <section className="inner-hero inner-hero-bike"><div><p className="eyebrow">Expedições de cicloturismo</p><h1>Liberdade para pedalar. Suporte para seguir.</h1><p>Você navega no próprio ritmo. A Ekonova cuida do desenho da rota, briefing, bagagem, monitoramento e plano de apoio.</p><a className="button button-light" href="#como-funciona">Como funciona <Arrow /></a></div></section>
     <section className="section-shell bike-system" id="como-funciona"><div className="section-heading centered-heading"><p className="eyebrow">O sistema Ekonova Ride</p><h2>Autonomia não é ausência de suporte.</h2></div><div className="dimension-grid"><article><span>01</span><h3>Rota validada</h3><p>Traçado, etapas e pontos de atenção apresentados no briefing.</p></article><article><span>02</span><h3>Navegação</h3><p>Arquivos e orientações para usar seu dispositivo com confiança.</p></article><article><span>03</span><h3>Bagagem</h3><p>Transporte entre etapas conforme o formato de cada saída.</p></article><article><span>04</span><h3>Rede de apoio</h3><p>Monitoramento e protocolos definidos antes da partida.</p></article></div></section>
