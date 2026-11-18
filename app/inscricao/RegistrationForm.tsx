@@ -4,18 +4,19 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { PublicDeparture } from "../../lib/public-departures";
-import { availableInstallments, bookingQuote, brazilDate, paymentTerms, type BookingPayment, type BookingRoom } from "../../lib/registration-payment";
+import { availableInstallments, bookingQuote, brazilDate, isAndesEssencial2027, paymentTerms, type BookingPayment, type BookingRoom } from "../../lib/registration-payment";
 import { paymentDateLabel } from "../../lib/atacama-payment";
 import "./inscricao.css";
 
 export function RegistrationForm({ departure }: { departure: PublicDeparture }) {
   const terms = paymentTerms(departure);
   const today = brazilDate();
+  const andes = isAndesEssencial2027(departure);
   const firstPossibleEntry = terms.fixedEntry || today;
   const pixOpen = (!terms.entryDeadline || today <= terms.entryDeadline) && availableInstallments(departure, firstPossibleEntry) > 0;
   const [room, setRoom] = useState<BookingRoom>("duplo");
   const [payment, setPayment] = useState<BookingPayment>(pixOpen ? "pix" : "avista");
-  const [selectedEntry, setEntry] = useState("");
+  const [selectedEntry, setEntry] = useState(andes ? today : "");
   const [installments, setInstallments] = useState(3);
   const [completeForm, setCompleteForm] = useState(false);
   const [finalized, setFinalized] = useState(false);
@@ -23,7 +24,7 @@ export function RegistrationForm({ departure }: { departure: PublicDeparture }) 
   const [saveError, setSaveError] = useState("");
   const [submittedEmail, setSubmittedEmail] = useState("");
   const entryDate = terms.fixedEntry || (payment === "avista" ? today : selectedEntry);
-  const maximum = availableInstallments(departure, entryDate);
+  const maximum = availableInstallments(departure, entryDate || (andes ? today : ""));
   const count = Math.min(installments, maximum);
   const quote = bookingQuote(departure, room, payment, entryDate, count);
   const money = (cents: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: departure.currency }).format(cents / 100);
@@ -83,7 +84,7 @@ export function RegistrationForm({ departure }: { departure: PublicDeparture }) 
             <button type="button" aria-pressed={room === "single"} className={room === "single" ? "selected" : ""} onClick={() => setRoom("single")}><strong>Quarto single</strong><small>Adicional de {money(departure.single_supplement_cents)}</small><b>{money(departure.price_cents + departure.single_supplement_cents)}</b></button>
           </fieldset>
           <fieldset><legend>Forma de pagamento</legend>
-            {pixOpen && <button type="button" aria-pressed={payment === "pix"} className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>Entrada de 30% e saldo em até {terms.maxInstallments} parcelas</small><b>{money(Math.round(quote.price * 0.3))}</b></button>}
+            {pixOpen && <button type="button" aria-pressed={payment === "pix"} className={payment === "pix" ? "selected" : ""} onClick={() => setPayment("pix")}><strong>Pix parcelado</strong><small>Entrada de 30% e saldo {andes ? `até ${paymentDateLabel(terms.finalDue)}` : `em até ${terms.maxInstallments} parcelas`}</small><b>{money(Math.round(quote.price * 0.3))}</b></button>}
             <button type="button" aria-pressed={payment === "avista"} className={payment === "avista" ? "selected" : ""} onClick={() => setPayment("avista")}><strong>Pagamento à vista</strong><small>{departure.cash_discount_percent > 0 ? `Desconto de ${departure.cash_discount_percent}%` : "Pagamento integral"}</small><b>{money(Math.round(quote.price * (100 - departure.cash_discount_percent) / 100))}</b></button>
           </fieldset>
           {payment === "pix" && <fieldset><legend>Planeje o Pix</legend>
