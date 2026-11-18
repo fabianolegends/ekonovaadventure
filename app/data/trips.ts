@@ -169,7 +169,7 @@ export const trips: Trip[] = [
   },
   {
     slug: "equador",
-    title: "Hiking no Equador",
+    title: "Trekking no Equador",
     place: "Quito e Andes Equatorianos",
     kind: "trekking",
     status: "Saída programada",
@@ -179,7 +179,7 @@ export const trips: Trip[] = [
     image: "/images/rota-equador.jpg",
     summary: "Vulcões, lagunas e vilarejos andinos em uma jornada de altitude com progressão planejada e acompanhamento próximo.",
     href: "/roteiros/equador",
-    registrationHref: "https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20me%20inscrever%20no%20Hiking%20no%20Equador%202027.",
+    registrationHref: "https://wa.me/5554991195626?text=Ol%C3%A1%21%20Quero%20me%20inscrever%20no%20Trekking%20no%20Equador%202027.",
     highlights: ["Laguna Cuicocha", "Parque Nacional Cotopaxi", "Cratera de Quilotoa", "Pailón del Diablo"],
     included: ["7 diárias em pousadas ou hotéis com café da manhã", "2 jantares previstos no programa", "Ingressos dos atrativos mencionados", "Registros de fotografia, vídeo e drone", "Camiseta exclusiva da expedição", "Guia Cadastur com formação em medicina de áreas remotas"],
     notIncluded: ["Passagens e deslocamentos internacionais", "Refeições, lanches e bebidas não especificados", "Hospedagens e deslocamentos fora do cronograma", "Despesas pessoais e serviços extras", "Suplemento para hospedagem individual"],

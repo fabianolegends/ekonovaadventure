@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return <main><SiteHeader />
-    <section className="section-shell story-grid"><div><p className="eyebrow">Nossa história</p><h2>Quatorze anos transformando caminhos em encontros.</h2></div><div><p>A Ekonova foi fundada em 2012, em Nova Petrópolis, na Serra Gaúcha. O primeiro evento aconteceu em novembro daquele ano, quando o cicloturismo e a bicicleta como lazer ainda começavam a ganhar espaço no Brasil.</p><p>Desde então, foram mais de 180 eventos e jornadas entre mountain bike, hiking, corridas de aventura, trail running e viagens internacionais.</p><p>Hoje, essa experiência ganha um foco mais nítido: turismo ativo para um público 50+ que procura autonomia, boa companhia, segurança e experiências com significado.</p></div></section>
+    <section className="section-shell story-grid"><div><p className="eyebrow">Nossa história</p><h2>Quatorze anos transformando caminhos em encontros.</h2></div><div><p>A Ekonova foi fundada em 2012, em Nova Petrópolis, na Serra Gaúcha. O primeiro evento aconteceu em novembro daquele ano, quando o cicloturismo e a bicicleta como lazer ainda começavam a ganhar espaço no Brasil.</p><p>Desde então, foram mais de 180 eventos e jornadas entre mountain bike, trekking, corridas de aventura, trail running e viagens internacionais.</p><p>Hoje, organizamos caminhadas e viagens de bicicleta em pequenos grupos. Na escolha de cada roteiro, levamos em conta a experiência e o ritmo de quem viaja conosco.</p></div></section>
 
     <section className="founders-section">
       <div className="founders-photo"><img src="/images/fabiano-cristiane-ekonova.jpg" alt="Fabiano e Cristiane Pellenz, criadores da Ekonova Adventure" /></div>

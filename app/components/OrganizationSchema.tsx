@@ -10,7 +10,7 @@ export function OrganizationSchema() {
     logo: `${BASE_URL}/ekonova-adventure-registrada.png`,
     image: `${BASE_URL}/images/clientes-trilha.jpeg`,
     description:
-      "Turismo ativo 50+ em pequenos grupos, com experiências de hiking e expedições de cicloturismo no Brasil e na América do Sul.",
+      "Caminhadas, trekking e expedições de cicloturismo em pequenos grupos no Brasil e na América do Sul.",
     foundingDate: "2012",
     telephone: "+55 54 99119-5626",
     email: "contato@ekonovaadv.com.br",

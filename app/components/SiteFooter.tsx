@@ -5,11 +5,11 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="footer-brand">
         <img src="/ekonova-adventure-registrada.png" alt="Ekonova Adventure®" />
-        <p>Turismo ativo para quem vive os 50+ com curiosidade, autonomia e segurança.</p>
+        <p>Caminhadas e viagens de bicicleta em pequenos grupos, com autonomia e acompanhamento da Ekonova.</p>
       </div>
       <div>
         <p className="footer-label">Experiências</p>
-        <Link href="/hiking">Hiking 50+ · Caminhadas</Link>
+        <Link href="/hiking">Caminhada / Trekking</Link>
         <Link href="/bike">Bike com autonavegação</Link>
         <Link href="/#saidas">Inscrições abertas</Link>
       </div>

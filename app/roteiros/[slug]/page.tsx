@@ -49,7 +49,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
   if (!trip) notFound();
 
   const categoryName =
-    trip.kind === "bike" ? "Expedições de cicloturismo" : "Hiking 50+";
+    trip.kind === "bike" ? "Expedições de cicloturismo" : "Caminhada / Trekking";
   const categoryUrl = trip.kind === "bike" ? "/bike" : "/hiking";
   const pageUrl = `${BASE_URL}/roteiros/${trip.slug}`;
 
@@ -86,7 +86,7 @@ export default async function Page({ params }: { params: Promise<{ slug: string 
         description: trip.summary,
         url: pageUrl,
         image: `${BASE_URL}${trip.image}`,
-        touristType: trip.kind === "bike" ? "Cicloturismo" : "Hiking 50+",
+        touristType: trip.kind === "bike" ? "Cicloturismo" : "Caminhada / Trekking",
         provider: {
           "@id": `${BASE_URL}/#organization`,
           "@type": "TravelAgency",

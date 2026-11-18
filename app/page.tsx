@@ -9,8 +9,8 @@ import { OrganizationSchema } from "./components/OrganizationSchema";
 import { featuredTrips } from "./data/trips";
 
 export const metadata: Metadata = {
-  title: "Turismo ativo 50+ em pequenos grupos",
-  description: "Experiências de hiking e cicloturismo para quem busca natureza, autonomia, pequenos grupos e suporte especializado no Brasil e na América do Sul.",
+  title: "Turismo ativo em pequenos grupos",
+  description: "Roteiros de caminhada, trekking e cicloturismo em pequenos grupos, no Brasil e na América do Sul, com suporte da equipe Ekonova.",
   alternates: { canonical: "/" },
   openGraph: { url: "/", images: ["/images/clientes-trilha.jpeg"] },
   twitter: { images: ["/images/clientes-trilha.jpeg"] },
@@ -24,7 +24,7 @@ export default function Home() {
 
       <section className="hero" id="top">
         <div className="hero-copy">
-          <p className="eyebrow">Turismo ativo 50+</p>
+          <p className="eyebrow">Turismo ativo</p>
           <h1>Viva a aventura no seu ritmo.</h1>
           <p className="hero-lede">Pequenos grupos, caminhos autênticos e suporte especializado para viver a natureza com autonomia e segurança.</p>
           <div className="hero-actions">
@@ -47,7 +47,7 @@ export default function Home() {
         <div className="pillar-grid">
           <a className="pillar-card" href="/hiking">
             <img src="/images/clientes-trilha.jpeg" alt="Clientes Ekonova caminhando em grupo em uma trilha vulcânica" />
-            <div className="pillar-overlay"><span>01 · Caminhada</span><h3>Hiking 50+</h3><p>Caminhadas de um dia, pequenos grupos e natureza com contexto.</p><i><Arrow /></i></div>
+            <div className="pillar-overlay"><span>01 · A pé</span><h3>Caminhada / Trekking</h3><p>Caminhadas de um dia, pequenos grupos e natureza com contexto.</p><i><Arrow /></i></div>
           </a>
           <a className="pillar-card" href="/bike">
             <img src="/images/card-cicloturismo.jpg" alt="Ciclista Ekonova pedalando por uma paisagem de campos verdes" />
@@ -107,7 +107,7 @@ export default function Home() {
             <p>Conheça as saídas programadas e as experiências disponíveis sob consulta em cada modalidade.</p>
           </div>
           <nav className="route-category-links" aria-label="Catálogos de experiências">
-            <a href="/hiking"><span>01</span><div><strong>Hiking 50+ · Caminhadas</strong><p>Caminhadas diárias e jornadas culturais no Brasil e nos Andes.</p></div><Arrow /></a>
+            <a href="/hiking"><span>01</span><div><strong>Caminhada / Trekking</strong><p>Caminhadas diárias e jornadas culturais no Brasil e nos Andes.</p></div><Arrow /></a>
             <a href="/bike"><span>02</span><div><strong>Expedições de cicloturismo</strong><p>Rotas com autonavegação, planejamento e rede de suporte.</p></div><Arrow /></a>
           </nav>
         </div>
@@ -128,7 +128,7 @@ export default function Home() {
       <section className="section-shell faq-section">
         <div className="section-heading"><p className="eyebrow">Perguntas importantes</p><h2>Antes de escolher, vale conversar.</h2></div>
         <div className="faq-grid">
-          <details><summary>Preciso ter mais de 50 anos?</summary><p>Não. O 50+ define nosso jeito de planejar: clareza, ritmo responsável, boa logística e respeito à autonomia. Pessoas alinhadas a esse estilo são bem-vindas.</p></details>
+          <details><summary>Como é o ritmo das caminhadas?</summary><p>Os guias consideram o terreno e o ritmo do grupo ao longo de cada etapa. Antes da reserva, você pode conferir as distâncias, o desnível e o tempo previsto de caminhada.</p></details>
           <details><summary>Como sei se o roteiro combina comigo?</summary><p>Começamos por uma conversa sobre sua experiência atual. Depois apresentamos o perfil completo do roteiro e os pontos que pedem preparação.</p></details>
           <details><summary>Autonavegação significa pedalar sozinho?</summary><p>Não necessariamente. Significa que você ou seu pequeno grupo segue a rota com autonomia, apoiado por briefing, arquivos de navegação, monitoramento e plano logístico.</p></details>
           <details><summary>As vagas mostradas são garantidas?</summary><p>O site informa o estágio real do grupo. A disponibilidade e a adequação ao roteiro são confirmadas individualmente pela equipe.</p></details>

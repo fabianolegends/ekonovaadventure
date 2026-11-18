@@ -15,7 +15,7 @@ export function RouteExplorer() {
       <div className="route-filters" aria-label="Filtrar roteiros">
         {(["todos", "trekking", "bike"] as Filter[]).map((item) => (
           <button key={item} type="button" aria-pressed={filter === item} onClick={() => setFilter(item)}>
-            {item === "todos" ? "Todos" : item === "trekking" ? "Hiking" : "Bike"}
+            {item === "todos" ? "Todos" : item === "trekking" ? "Caminhada / Trekking" : "Bike"}
           </button>
         ))}
       </div>

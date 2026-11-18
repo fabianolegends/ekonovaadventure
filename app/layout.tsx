@@ -16,12 +16,12 @@ const display = Cormorant_Garamond({
 });
 
 const siteDescription =
-  "Turismo ativo 50+ em pequenos grupos: hiking, caminhadas e expedições de cicloturismo com planejamento, segurança e suporte especializado.";
+  "Caminhadas, trekking e expedições de cicloturismo em pequenos grupos, com planejamento e suporte especializado.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.ekonovaadv.com.br"),
   title: {
-    default: "Ekonova Adventure | Turismo ativo 50+",
+    default: "Ekonova Adventure | Turismo ativo",
     template: "%s | Ekonova Adventure",
   },
   description: siteDescription,
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     locale: "pt_BR",
     url: "/",
     siteName: "Ekonova Adventure",
-    title: "Ekonova Adventure | Turismo ativo 50+",
+    title: "Ekonova Adventure | Turismo ativo",
     description: siteDescription,
     images: [
       {
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Ekonova Adventure | Turismo ativo 50+",
+    title: "Ekonova Adventure | Turismo ativo",
     description: siteDescription,
     images: ["/images/clientes-trilha.jpeg"],
   },

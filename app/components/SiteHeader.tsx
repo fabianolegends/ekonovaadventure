@@ -54,7 +54,7 @@ export function SiteHeader({ overlay = true }: { overlay?: boolean }) {
       </Link>
       <nav className="desktop-nav" aria-label="Navegação principal">
         <Link href="/">Home</Link>
-        <Link href="/hiking">Hiking 50+</Link>
+        <Link href="/hiking">Caminhada / Trekking</Link>
         <Link href="/bike">Expedições de cicloturismo</Link>
         <Link href="/#saidas">Inscrições abertas</Link>
         <Link href="/#depoimentos">Depoimentos</Link>
@@ -65,7 +65,7 @@ export function SiteHeader({ overlay = true }: { overlay?: boolean }) {
         <summary aria-label="Abrir menu">Menu</summary>
         <nav aria-label="Navegação móvel">
           <Link href="/">Home</Link>
-          <Link href="/hiking">Hiking 50+</Link>
+          <Link href="/hiking">Caminhada / Trekking</Link>
           <Link href="/bike">Expedições de cicloturismo</Link>
           <Link href="/#saidas">Inscrições abertas</Link>
           <Link href="/#depoimentos">Depoimentos</Link>
